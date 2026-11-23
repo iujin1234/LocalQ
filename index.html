@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LocalQ — 지도로 묻고 현지인이 답하는 여행 Q&amp;A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#2563EB;--blue-ink:#1D4ED8;--blue-soft:#EAF1FE;--teal:#14B8A6;--teal-ink:#0F766E;--teal-soft:#E6F7F5;
+  --amber:#F59E0B;--amber-ink:#92400E;--amber-soft:#FEF3C7;--red:#DC2626;
+  --bg:#FFFFFF;--surface:#F8FAFC;--surface-2:#F1F5F9;--text:#0F172A;--muted:#64748B;--line:#E2E8F0;
+  --card:#FFFFFF;--shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.10);--shadow-sm:0 1px 2px rgba(15,23,42,.08),0 2px 8px rgba(15,23,42,.06);
+  --land:#EEF2F5;--water:#BFDCF5;--park:#D7ECDF;--mount:#CBE3D3;--road:#FFFFFF;--road-c:#D6DEE8;--line2:#22A06B;--label-halo:#EEF2F5;
+  --bub-them:#F1F5F9;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --blue:#3B82F6;--blue-ink:#93C5FD;--blue-soft:#172554;--teal:#2DD4BF;--teal-ink:#5EEAD4;--teal-soft:#0F2E2B;
+  --amber:#FBBF24;--amber-ink:#FDE68A;--amber-soft:#3A2A06;--red:#F87171;
+  --bg:#0F172A;--surface:#131D31;--surface-2:#1E293B;--text:#F1F5F9;--muted:#94A3B8;--line:#273449;
+  --card:#162036;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45);--shadow-sm:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
+  --land:#141E30;--water:#1C3756;--park:#163127;--mount:#142A23;--road:#26334A;--road-c:#1A2438;--line2:#2BB673;--label-halo:#141E30;
+  --bub-them:#1E293B;color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --blue:#3B82F6;--blue-ink:#93C5FD;--blue-soft:#172554;--teal:#2DD4BF;--teal-ink:#5EEAD4;--teal-soft:#0F2E2B;
+  --amber:#FBBF24;--amber-ink:#FDE68A;--amber-soft:#3A2A06;--red:#F87171;
+  --bg:#0F172A;--surface:#131D31;--surface-2:#1E293B;--text:#F1F5F9;--muted:#94A3B8;--line:#273449;
+  --card:#162036;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45);--shadow-sm:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
+  --land:#141E30;--water:#1C3756;--park:#163127;--mount:#142A23;--road:#26334A;--road-c:#1A2438;--line2:#2BB673;--label-halo:#141E30;
+  --bub-them:#1E293B;color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--text);font:400 15px/1.5 "IBM Plex Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Hiragino Sans","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:8px}
+img{max-width:100%;display:block}
+.ic{flex:none;display:block}
+[hidden]{display:none!important}
+.muted{color:var(--muted)}
+.fine{font-size:12.5px;color:var(--muted);line-height:1.5;display:flex;gap:6px;align-items:flex-start}
+.fine .ic{margin-top:2px}
+.center{justify-content:center;text-align:center}
+.reward,.amt,.stat b,.wl-main b{font-variant-numeric:tabular-nums}
+
+/* ---------- app shell ---------- */
+.app{height:100%;display:grid;grid-template-rows:auto 1fr auto;grid-template-areas:"head" "main" "nav"}
+.topbar{grid-area:head;display:flex;align-items:center;gap:8px;padding:8px 12px;height:56px;border-bottom:1px solid var(--line);background:var(--bg);position:relative;z-index:6}
+.brand{display:flex;align-items:center;gap:6px;font-weight:700;letter-spacing:-.02em;font-size:17px;text-decoration:none;color:var(--text)}
+.brand svg{width:28px;height:28px}
+.region{display:flex;align-items:center;gap:4px;min-width:0;flex:1 1 auto;padding:6px 10px;border-radius:999px;background:var(--surface-2);font-weight:600;font-size:14px;max-width:180px}
+.region span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.region .ic{color:var(--blue)}
+.mode{display:flex;background:var(--surface-2);border-radius:999px;padding:3px;flex:none}
+.mode button{padding:5px 10px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.mode button[aria-pressed="true"]{background:var(--blue);color:#fff;box-shadow:var(--shadow-sm)}
+.mode button[data-mode="answer"][aria-pressed="true"]{background:var(--teal-ink)}
+.lang{position:relative;display:flex;align-items:center;gap:3px;padding:6px 8px;border-radius:10px;font-size:12px;font-weight:700;color:var(--muted);flex:none}
+.lang select{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.lang:focus-within{outline:2px solid var(--blue)}
+.main{grid-area:main;position:relative;min-height:0;overflow:hidden}
+.view{position:absolute;inset:0}
+.view-page{overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:430px){.brand b{display:none}.mode button{padding:5px 8px}}
+
+/* tab bar */
+.tabbar{grid-area:nav;display:flex;justify-content:space-around;align-items:flex-end;border-top:1px solid var(--line);background:var(--bg);padding:6px 4px 6px;position:relative;z-index:6}
+.tab{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;color:var(--muted);text-decoration:none;font-size:11px;font-weight:600;border-radius:12px}
+.tab.on{color:var(--blue)}
+.tab .badge{position:absolute;top:0;left:calc(50% + 6px)}
+.tab-create{color:var(--text)}
+.fab{width:52px;height:52px;margin-top:-26px;border-radius:18px;background:var(--blue);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(37,99,235,.35);border:3px solid var(--bg)}
+.badge{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:700;display:inline-grid;place-items:center;line-height:1}
+
+/* ---------- map ---------- */
+.view-map{display:block}
+.map-area{position:absolute;inset:0;overflow:hidden}
+.map{position:absolute;inset:0;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;background:var(--land)}
+.map.dragging{cursor:grabbing}
+.map svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.m-land{fill:var(--land)}.m-park{fill:var(--park)}.m-mount{fill:var(--mount)}
+.m-water{fill:none;stroke:var(--water);stroke-linecap:round;stroke-linejoin:round}
+.m-road-c{fill:none;stroke:var(--road-c);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.m-road{fill:none;stroke:var(--road);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.m-line2{fill:none;stroke:var(--line2);stroke-width:2;opacity:.5;stroke-dasharray:1 0}
+.overlay{position:absolute;inset:0;pointer-events:none}
+.overlay>*{position:absolute;left:0;top:0}
+.lbl{translate:-50% -50%;white-space:nowrap;font-weight:600;color:var(--muted);text-shadow:0 0 3px var(--label-halo),0 0 3px var(--label-halo),0 0 6px var(--label-halo)}
+.lbl-d{font-size:12px;letter-spacing:.02em;opacity:.85}
+.lbl-h{font-size:13px;color:var(--text);opacity:.55}
+.lbl-p{font-size:11px;opacity:.85}
+.pin{pointer-events:auto;translate:-50% -100%;margin-top:-6px;display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;font-weight:700;font-size:13px;line-height:1.2;white-space:nowrap;background:var(--card);color:var(--blue-ink);border:2px solid var(--blue);box-shadow:var(--shadow-sm);transition:scale .15s}
+.pin::after{content:"";position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:inherit;border-right:inherit;border-bottom:inherit;transform:translateX(-50%) rotate(45deg);border-bottom-right-radius:2px}
+.pin .amt{display:flex;align-items:center;gap:3px;position:relative;z-index:1}
+.pin-unanswered{background:var(--amber);color:#1F1300;border-color:#fff;box-shadow:0 0 0 4px rgba(245,158,11,.28),var(--shadow-sm);font-size:14px;padding:6px 12px}
+.pin-active .cnt{position:absolute;top:-8px;right:-8px;min-width:18px;height:18px;border-radius:999px;background:var(--teal-ink);color:#fff;font-size:11px;display:grid;place-items:center;border:2px solid var(--card);z-index:2;padding:0 3px}
+.pin-completed{background:var(--surface-2);color:var(--muted);border-color:var(--line);font-size:11.5px;padding:3px 8px;font-weight:600}
+.pin-mine{background:var(--blue);color:#fff;border-color:#fff}
+.pin-dim{opacity:.6}
+.pin-sel{scale:1.15;z-index:5;opacity:1}
+.cluster{pointer-events:auto;translate:-50% -50%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:52px;padding:6px 10px;border-radius:16px;background:var(--blue);color:#fff;box-shadow:var(--shadow);line-height:1.1;border:2px solid #fff}
+.cluster b{font-size:17px}.cluster small{font-size:10.5px;opacity:.9;white-space:nowrap}
+.cluster.has-open{box-shadow:0 0 0 4px rgba(245,158,11,.55),var(--shadow)}
+.subzone{translate:-50% -50%;border-radius:50%;border:2px dashed var(--teal);background:rgba(20,184,166,.08)}
+.subzone.editing{border-style:solid;background:rgba(20,184,166,.14)}
+.crosshair{translate:-50% -50%;width:18px;height:18px;border-radius:50%;background:var(--teal-ink);border:3px solid #fff;box-shadow:var(--shadow-sm)}
+.me-dot{translate:-50% -50%;width:16px;height:16px;border-radius:50%;background:var(--blue);border:3px solid #fff;box-shadow:0 0 0 8px rgba(37,99,235,.18)}
+.drop-pin{translate:-50% -100%;color:var(--blue);filter:drop-shadow(0 3px 4px rgba(15,23,42,.3))}
+.drop-pin svg{fill:var(--card)}
+
+.map-top{position:absolute;top:12px;left:12px;right:68px;z-index:4;max-width:460px}
+.search{display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:14px;background:var(--card);box-shadow:var(--shadow);color:var(--muted)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-size:15px}
+.search.inline{box-shadow:none;border:1px solid var(--line);background:var(--surface);margin:14px 0 6px}
+.search-results{margin-top:6px;background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:8px;max-height:50vh;overflow:auto}
+.sr-label{font-size:12px;color:var(--muted);font-weight:600;padding:4px 6px 8px}
+.sr{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:10px 8px;border-radius:10px}
+.sr:hover,.sr:focus-visible{background:var(--surface-2)}
+.sr .ic{color:var(--blue);margin-top:2px}
+.sr span{display:flex;flex-direction:column;font-weight:600}
+.sr small{font-weight:400;color:var(--muted);font-size:12.5px}
+.sr-empty{padding:10px;color:var(--muted);margin:0;font-size:14px}
+.map-ctrls{position:absolute;top:12px;right:12px;z-index:4;display:flex;flex-direction:column;gap:8px}
+.ctl{position:relative;width:46px;height:46px;border-radius:14px;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;color:var(--text)}
+.ctl:active{scale:.95}
+.ctl-zoomIn{border-radius:14px 14px 0 0;margin-bottom:-8px;box-shadow:var(--shadow-sm)}
+.ctl-zoomOut{border-radius:0 0 14px 14px;border-top:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.ctl-subscribe{color:var(--teal-ink)}
+.ctl .dot{position:absolute;top:5px;right:5px;min-width:16px;height:16px;border-radius:999px;background:var(--blue);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.banner{position:absolute;top:68px;left:12px;right:68px;z-index:4;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:14px;background:var(--blue);color:#fff;font-weight:600;font-size:14px;box-shadow:var(--shadow);max-width:460px}
+.banner span{flex:1}.banner .link{color:#fff;text-decoration:underline}
+.preview{position:absolute;left:12px;right:12px;bottom:12px;z-index:4;display:flex;justify-content:center;pointer-events:none}
+.preview>*{pointer-events:auto}
+.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);border:1px solid var(--line)}
+.pv{position:relative;width:100%;max-width:480px;padding:16px 16px 14px;box-shadow:var(--shadow);border:0}
+.pv-x{position:absolute;top:8px;right:8px}
+.pv-place{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-weight:600;padding-right:30px}
+.pv-place .ic{color:var(--blue)}
+.cat{padding:2px 8px;border-radius:999px;background:var(--surface-2);font-size:12px;font-weight:600;color:var(--muted)}
+.pv-title{margin:8px 0 4px;font-size:18px;line-height:1.35;font-weight:700;letter-spacing:-.01em}
+.pv-desc{margin:0 0 6px;color:var(--muted);font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pv-desc.full{display:block;-webkit-line-clamp:unset;white-space:pre-wrap}
+.pv-addr{margin:0;color:var(--muted);font-size:13px}
+.pv-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:8px;font-size:13px;color:var(--muted)}
+.pv-meta>span{display:inline-flex;align-items:center;gap:4px}
+.reward{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:var(--amber-soft);color:var(--amber-ink);font-weight:700;font-size:14px}
+.pv-actions{display:flex;gap:8px;margin-top:14px}
+.pv-actions .btn{flex:1}
+.hint-card{width:100%;max-width:480px;padding:14px 14px 14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);border:0}
+.hint-card p{margin:0;flex:1;font-size:14px;color:var(--muted)}
+.summary-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);font-weight:600;font-size:14px}
+.summary-chip .ic{color:var(--amber)}
+.tr-note{display:flex;align-items:center;gap:5px;margin:4px 0 0;font-size:12px;color:var(--teal-ink)}
+.tr-note.warn{color:var(--amber-ink)}
+
+/* list panel */
+.list-panel{display:none;position:absolute;inset:70px 0 0;z-index:3;background:var(--bg);overflow-y:auto;border-top:1px solid var(--line)}
+.list-open .list-panel{display:block}
+.list-open .preview{display:none}
+.lp-head{position:sticky;top:0;background:var(--bg);padding:14px 16px 10px;z-index:1}
+.lp-head h2{margin:0 0 10px;font-size:16px}
+.lp-list{padding:0 16px 24px;display:flex;flex-direction:column;gap:10px}
+.qcard{display:block;width:100%;text-align:left;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);transition:border-color .15s}
+.qcard:hover{border-color:var(--blue)}
+.qc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.qc-place{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);font-weight:600;min-width:0}
+.qc-place .ic{color:var(--blue)}
+.dist{margin-left:6px;font-weight:500}
+.qc-title{margin:6px 0 8px;font-weight:600;font-size:15.5px;line-height:1.4}
+.qc-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12.5px;color:var(--muted)}
+.unread{color:var(--blue);font-weight:700}
+.st{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.st-unanswered{background:var(--amber-soft);color:var(--amber-ink)}
+.st-active{background:var(--teal-soft);color:var(--teal-ink)}
+.st-completed,.st-expired,.st-cancelled{background:var(--surface-2);color:var(--muted)}
+.st-selected{background:var(--blue-soft);color:var(--blue-ink)}
+.demo-chip{padding:1px 7px;border-radius:6px;border:1px dashed var(--muted);color:var(--muted);font-size:11px;font-weight:600}
+
+/* chips, buttons, forms */
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.chip.on{background:var(--text);border-color:var(--text);color:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 16px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;white-space:nowrap}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.primary:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:var(--surface-2);color:var(--text)}
+.btn.amber{background:var(--amber);color:#1F1300}
+.btn.danger{background:var(--red);color:#fff}
+.btn.small{min-height:36px;padding:0 12px;font-size:13.5px;border-radius:11px}
+.btn.wide{width:100%}
+.link{color:var(--blue);font-weight:600;font-size:inherit;text-decoration:none}
+.danger-text{color:var(--red)!important}
+.icon-btn{width:36px;height:36px;border-radius:10px;display:inline-grid;place-items:center;color:var(--muted);cursor:pointer;flex:none}
+.icon-btn:hover{background:var(--surface-2)}
+.field{display:block;margin:16px 0 0}
+.fl{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+.fl small{font-weight:500;color:var(--muted);margin-left:4px}
+.field input[type=text],.field textarea,.text-in,.won-input{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;font-size:15px;outline:0}
+.field input:focus,.field textarea:focus,.text-in:focus,.won-input:focus-within{border-color:var(--blue);background:var(--card)}
+.field textarea{resize:vertical;min-height:84px;line-height:1.5}
+.won-input{display:flex;align-items:center;gap:6px;padding:0 14px}
+.won-input span{font-weight:700;color:var(--muted)}
+.won-input input{flex:1;border:0;background:transparent;outline:0;padding:12px 0;font-size:15px;min-width:0}
+.switch{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .15s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s}
+.switch:checked{background:var(--teal-ink)}
+.switch:checked::after{left:21px}
+.switch-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;font-weight:600;font-size:14px}
+
+/* sheets */
+.sheet-root{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center}
+.scrim{position:absolute;inset:0;background:rgba(15,23,42,.45)}
+.sheet{position:relative;width:100%;max-width:520px;max-height:85vh;overflow:auto;background:var(--bg);border-radius:22px 22px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+@media (min-width:600px){.sheet-root{align-items:center}.sheet{border-radius:22px}}
+.sh-title{margin:0 0 6px;font-size:18px}
+.sh-body{margin:0;color:var(--muted);font-size:14.5px}
+.sh-actions{display:flex;gap:8px;margin-top:20px}
+.sh-actions .btn{flex:1}
+
+/* subscription editor */
+.sub-sheet{position:absolute;left:12px;right:12px;bottom:12px;z-index:5;display:flex;justify-content:center}
+.sub-card{width:100%;max-width:480px;padding:16px;box-shadow:var(--shadow);border:0;max-height:62%;overflow:auto}
+.sub-head{display:flex;justify-content:space-between;align-items:center}
+.sub-head h2{margin:0;font-size:17px}
+.sub-where{display:flex;align-items:center;gap:6px;margin:6px 0 2px;font-weight:700;color:var(--teal-ink)}
+.sub-hint{margin:0;font-size:13px;color:var(--muted)}
+.sub-card .field{margin-top:12px}
+.sub-card .btn.wide{margin-top:14px}
+.chips.scroll{flex-wrap:nowrap}
+
+/* pages */
+.page{max-width:720px;margin:0 auto;padding:18px 16px 32px}
+.page-title{margin:0 0 14px;font-size:24px;letter-spacing:-.02em;line-height:1.25}
+.page-head{display:flex;justify-content:space-between;align-items:baseline}
+.seg{display:flex;background:var(--surface-2);padding:4px;border-radius:14px;margin-bottom:14px}
+.seg button{flex:1;padding:8px 6px;border-radius:10px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:var(--shadow-sm)}
+.cards{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.empty{padding:28px 12px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty p{margin:0;max-width:34ch}
+.block{margin-top:26px}
+.block h2{font-size:16px;margin:0 0 10px}
+.block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.block-head h2{margin:0}
+.sub-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 12px 12px 14px;margin-bottom:8px}
+.sr-main{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:13px;color:var(--muted)}
+.sr-main b{font-size:15px;color:var(--text);width:100%}
+.sr-actions{display:flex;align-items:center;gap:2px}
+.nlist{display:flex;flex-direction:column}
+.nrow{display:flex;align-items:flex-start;gap:12px;text-align:left;padding:12px 6px;border-bottom:1px solid var(--line);width:100%}
+.nrow.unread .n-main b::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--blue);margin-right:6px;vertical-align:middle}
+.n-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface-2);color:var(--muted);flex:none}
+.n-new_question{background:var(--amber-soft);color:var(--amber-ink)}
+.n-new_answer,.n-message{background:var(--teal-soft);color:var(--teal-ink)}
+.n-selected{background:var(--blue-soft);color:var(--blue-ink)}
+.n-main{flex:1;min-width:0;display:flex;flex-direction:column;font-size:13.5px;color:var(--muted)}
+.n-main b{color:var(--text);font-size:14.5px;font-weight:600}
+.n-main span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-time{font-size:12px;color:var(--muted);flex:none}
+.prof{display:flex;gap:16px;align-items:center;padding:18px}
+.prof-av{position:relative;cursor:pointer;flex:none}
+.av-edit{position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.prof-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.prof-name{display:flex;align-items:center;gap:2px;font-size:20px}
+.prof-main .muted{font-size:13.5px}
+.level{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;margin-top:4px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--teal-soft);color:var(--teal-ink)}
+.lang-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:10px;font-weight:600;font-size:14px}
+.lang-row span{display:flex;align-items:center;gap:8px}
+.lang-row select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:19px}.stat b.rw{font-size:15px;color:var(--amber-ink)}
+.stat span{font-size:12px;color:var(--muted)}
+@media (max-width:380px){.stats{grid-template-columns:repeat(2,1fr)}}
+.rep{padding:14px}
+.rep-bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.rep-bar span{display:block;height:100%;background:var(--teal);border-radius:999px}
+.rep p{margin:8px 0 10px;font-size:13.5px;color:var(--muted)}
+.rep-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.rep-steps li{display:flex;flex-direction:column;font-size:11.5px;color:var(--muted);padding-top:8px;border-top:3px solid var(--line)}
+.rep-steps li.done{border-color:var(--teal)}
+.rep-steps b{font-size:12.5px;color:var(--text)}
+.wallet{padding:16px}
+.wl-main{display:flex;justify-content:space-between;align-items:baseline}
+.wl-main span{font-weight:600;color:var(--muted)}
+.wl-main b{font-size:26px;letter-spacing:-.02em}
+.wl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.wl-grid div{background:var(--surface);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;font-size:12.5px;color:var(--muted)}
+.wl-grid b{font-size:16px;color:var(--text)}
+.wallet .btn{margin-top:10px}
+.txlist{display:flex;flex-direction:column}
+.txrow{display:flex;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.txrow>div{display:flex;flex-direction:column;min-width:0;font-size:13px;color:var(--muted)}
+.txrow>div b{color:var(--text);font-size:14px}
+.txrow>div span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txrow small{font-size:12px}
+.txs{margin-left:6px;font-weight:600}
+.txs-pending{color:var(--amber-ink)}.txs-refunded{color:var(--muted)}
+.txrow .amt{font-weight:700;white-space:nowrap}
+.amt.pos{color:var(--teal-ink)}.amt.neg{color:var(--text)}
+.neg{color:var(--red)}
+.personas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0 14px}
+.persona{position:relative;display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--card);text-align:left}
+.persona.on{border-color:var(--blue);background:var(--blue-soft)}
+.persona span{display:flex;flex-direction:column;line-height:1.25}
+.persona small{color:var(--muted);font-size:12px}
+.persona .now{position:absolute;top:6px;right:8px;font-size:10.5px;font-weight:700;color:var(--blue-ink)}
+.av{display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:700;flex:none;overflow:hidden;background:var(--surface-2)}
+.av img{width:100%;height:100%;object-fit:cover}
+
+/* full-screen flows */
+.full-root{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.35);display:flex;justify-content:center;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.full{width:100%;max-width:640px;height:100%;background:var(--bg);display:flex;flex-direction:column}
+@media (min-width:700px){.full{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+.full-head{display:flex;align-items:center;gap:8px;padding:8px 10px;min-height:56px;border-bottom:1px solid var(--line)}
+.full-head h1{margin:0;font-size:17px;flex:1;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-count{font-size:13px;color:var(--muted);font-weight:600;padding-right:6px}
+.full-body{flex:1;overflow-y:auto;padding:4px 18px 24px}
+.full-foot{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.full-foot .btn{flex:1}
+.full-foot .btn.ghost{flex:0 0 auto}
+.steps{display:flex;list-style:none;margin:0;padding:12px 18px 4px;gap:6px}
+.steps li{flex:1;display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+.steps li span{height:4px;border-radius:999px;background:var(--line);font-size:0}
+.steps li.on{color:var(--blue)}.steps li.on span{background:var(--blue)}
+.steps li.done span{background:var(--blue);opacity:.45}
+.cr-h{font-size:20px;margin:18px 0 10px;letter-spacing:-.01em}
+.loc-card{display:flex;gap:10px;align-items:flex-start;padding:14px;border-color:var(--blue);background:var(--blue-soft)}
+.loc-card .ic{color:var(--blue);margin-top:2px}
+.loc-card div{display:flex;flex-direction:column}
+.loc-card span{font-size:13px;color:var(--muted)}
+.cr-results{display:flex;flex-direction:column}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.loc-mini{display:flex;align-items:center;gap:6px;margin-top:16px;font-weight:600;font-size:14px}
+.loc-mini .ic{color:var(--blue)}
+.loc-mini .link{margin-left:auto;font-size:13px}
+.img-prev{position:relative;display:inline-block}
+.img-prev img{max-height:160px;border-radius:12px}
+.img-prev .icon-btn{position:absolute;top:6px;right:6px;background:rgba(15,23,42,.6);color:#fff;width:28px;height:28px}
+.img-prev.small img{max-height:72px;border-radius:10px}
+.file-btn{cursor:pointer}
+.reward-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rw-opt{padding:14px 4px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.rw-opt.on{border-color:var(--amber);background:var(--amber-soft);color:var(--amber-ink)}
+@media (max-width:360px){.reward-grid{grid-template-columns:repeat(2,1fr)}}
+.fee{margin-top:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.fee div{display:flex;justify-content:space-between}
+.fee span{color:var(--muted)}
+.review{padding:16px;margin-bottom:10px}
+.rv-img{margin-top:10px;border-radius:12px;max-height:240px;object-fit:cover}
+
+/* room */
+.rh-title{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.rh-title div{min-width:0;display:flex;flex-direction:column}
+.rh-title span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.room-body{flex:1;overflow-y:auto;padding:12px 14px 16px;display:flex;flex-direction:column;gap:12px}
+.qblock{padding:14px}
+.qblock .pv-title{font-size:17px}
+.qblock .link{display:block;margin-top:12px;font-size:13.5px}
+.by{display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:13px;color:var(--muted)}
+.qmini{border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.qmini summary{padding:10px 12px;cursor:pointer;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.qmini .qblock{border:0;box-shadow:none;background:transparent;padding-top:0}
+.sbanner{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:14px;background:var(--surface-2);font-weight:600;font-size:14px;color:var(--muted)}
+.sbanner.ok{background:var(--amber-soft);color:var(--amber-ink)}
+.join{padding:16px;text-align:center}
+.join p{margin:0 0 12px;color:var(--muted);font-size:14px}
+.join .fine{margin-top:10px;justify-content:center}
+.threads{display:flex;flex-direction:column;gap:8px}
+.thread{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--line);text-align:left;width:100%}
+.th-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.th-main b{font-size:15px;display:flex;align-items:center;gap:6px}
+.th-main>span{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.th-side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:12px;color:var(--muted)}
+.msgs{display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:8px;align-items:flex-end;max-width:86%}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.mcol{display:flex;flex-direction:column;gap:3px;min-width:0}
+.msg.me .mcol{align-items:flex-end}
+.who{font-size:12px;font-weight:600;color:var(--muted);padding:0 4px}
+.bub{padding:10px 13px;border-radius:18px;background:var(--bub-them);border-bottom-left-radius:6px;overflow:hidden}
+.msg.me .bub{background:var(--blue);color:#fff;border-bottom-left-radius:18px;border-bottom-right-radius:6px}
+.bub p{margin:0;white-space:pre-wrap;word-break:break-word}
+.bub img{border-radius:12px;margin:-4px -7px 6px;max-width:calc(100% + 14px);max-height:240px;object-fit:cover}
+.bub img:last-child{margin-bottom:-4px}
+.mmeta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:11.5px;color:var(--muted);padding:0 4px}
+.msg.me .mmeta{justify-content:flex-end}
+.read{color:var(--blue-ink);font-weight:600}
+.tr-toggle{display:inline-flex;align-items:center;gap:3px;color:var(--teal-ink);font-weight:600;font-size:11.5px}
+.tr-toggle.warn{color:var(--amber-ink)}
+.composer{border-top:1px solid var(--line);padding:8px 10px 10px;background:var(--bg)}
+.composer.off{opacity:.6}
+.cmp-row{display:flex;align-items:flex-end;gap:6px}
+.cmp-row textarea{flex:1;resize:none;border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:10px 14px;outline:0;max-height:120px;line-height:1.4;font-size:15px}
+.cmp-row textarea:focus{border-color:var(--blue)}
+.cmp-row label.icon-btn{width:42px;height:42px}
+.send{width:42px;height:42px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;flex:none}
+.send:disabled{opacity:.4}
+.cmp-note{margin:6px 6px 0;font-size:12px;color:var(--teal-ink);display:flex;align-items:center;gap:4px;min-height:0}
+.cmp-note:empty{display:none}
+#cmpPrev:empty{display:none}
+#cmpPrev{padding:4px 6px 8px}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));translate:-50% 20px;z-index:90;background:var(--text);color:var(--bg);padding:11px 16px;border-radius:14px;font-size:14px;font-weight:600;max-width:min(92vw,440px);opacity:0;pointer-events:none;transition:opacity .2s,translate .2s;text-align:center}
+.toast.show{opacity:1;translate:-50% 0}
+
+/* desktop split */
+@media (min-width:960px){
+  .app{grid-template-columns:88px 1fr;grid-template-rows:auto 1fr;grid-template-areas:"nav head" "nav main"}
+  .tabbar{flex-direction:column;justify-content:flex-start;align-items:stretch;gap:6px;border-top:0;border-right:1px solid var(--line);padding:16px 8px}
+  .tab{flex:none;padding:10px 0;font-size:12px}
+  .tab.on{background:var(--blue-soft)}
+  .tab-create{order:-1;margin-bottom:10px}
+  .fab{margin-top:0}
+  .topbar{padding:8px 20px}
+  .region{max-width:240px;flex:0 1 auto}
+  .topbar .mode{margin-left:auto}
+  .view-map{display:grid;grid-template-columns:1fr 400px}
+  .map-area{position:relative;inset:auto}
+  .list-panel{display:block;position:relative;inset:auto;border-top:0;border-left:1px solid var(--line)}
+  .ctl-toggleList{display:none}
+  .list-open .preview{display:flex}
+  .preview{right:auto;width:420px;left:20px;bottom:20px}
+  .sub-sheet{right:auto;width:440px;left:20px;bottom:20px}
+  .map-top{left:20px;top:20px}
+  .map-ctrls{top:20px;right:20px}
+  .banner{left:20px;top:76px}
+  .toast{bottom:32px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <a class="brand" href="#map" aria-label="LocalQ">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C9.1 2 4 7.1 4 13.6 4 22.2 16 30 16 30s12-7.8 12-16.4C28 7.1 22.9 2 16 2z" fill="#2563EB"/><circle cx="16" cy="13.2" r="5.4" fill="none" stroke="#fff" stroke-width="2.6"/><path d="m19.2 16.6 3.4 3.4" stroke="#F59E0B" stroke-width="2.8" stroke-linecap="round"/></svg>
+      <b>LocalQ</b>
+    </a>
+    <button class="region" id="regionBtn" data-act="regionSearch"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg><span id="regionName">홍대</span></button>
+    <div class="mode" id="modeSwitch" role="group"><button data-act="setMode" data-mode="ask" aria-pressed="false">질문자</button><button data-act="setMode" data-mode="answer" aria-pressed="true">답변자</button></div>
+    <label class="lang"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span id="langCode">KO</span><select id="langSel"></select></label>
+  </header>
+  <main class="main">
+    <section class="view view-map" id="mapView">
+      <div class="map-area">
+        <div class="map" id="map"><svg id="basemap" aria-hidden="true"><g id="world"></g></svg><div class="overlay" id="overlay"></div></div>
+        <div class="map-top" id="searchWrap"><div class="search"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="searchInput" type="search" autocomplete="off" enterkeyhint="search"></div><div class="search-results" id="searchResults" hidden></div></div>
+        <div class="map-ctrls" id="mapCtrls"></div>
+        <div id="mapBanner"></div>
+        <div class="preview" id="preview"></div>
+        <div class="sub-sheet" id="subSheet" hidden></div>
+      </div>
+      <aside class="list-panel" id="listPanel"></aside>
+    </section>
+    <section class="view view-page" id="pageView" hidden></section>
+  </main>
+  <nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+</div>
+<div class="full-root" id="createRoot" hidden></div>
+<div class="full-root" id="roomRoot" hidden></div>
+<div class="sheet-root" id="sheetRoot" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const I18N = {
+ko: {
+  tab_map: '지도', tab_questions: '질문', tab_create: '질문하기', tab_notifications: '알림', tab_profile: '프로필',
+  mode_ask: '질문자', mode_answer: '답변자', mode_label: '모드 전환', mode_ask_toast: '질문자 모드예요. 지도를 눌러 위치를 고르세요.', mode_answer_toast: '답변자 모드예요. 지도에서 질문을 찾아보세요.',
+  language: '언어', region_label: '현재 지역: {name}. 눌러서 장소 검색', search_ph: '장소나 지역 검색', search_none: '찾는 장소가 없어요. 다른 이름으로 검색해 보세요.', popular_areas: '많이 찾는 지역',
+  ctl_locate: '내 위치', ctl_zoom_in: '확대', ctl_zoom_out: '축소', ctl_filter: '필터', ctl_subscribe: '이 지역 알림 받기', ctl_list: '목록 보기', ctl_map: '지도 보기',
+  cluster_label: '질문 {n}개 묶음. 눌러서 확대', up_to: '최대 {amt}', my_location: '내 위치',
+  pick_hint: '지도를 눌러 질문할 위치를 고르세요', cancel: '취소', close: '닫기', back: '뒤로', next: '다음', change: '변경', retry: '다시 시도', apply: '적용', reset: '초기화', delete: '삭제', edit: '수정', save_changes: '저장', optional: '선택',
+  preview_label: '질문 미리보기', open_my_room: '내 질문방 열기', continue_chat: '대화 이어가기', view_question: '질문 보기', answer_now: '지금 답변하기',
+  n_answerers: '{n}명 답변', selected_location: '선택한 위치', ask_here: '이 위치에 질문하기', ask_hint: '지도에서 궁금한 곳을 누르거나 장소를 검색하세요.', ask_question: '질문하기',
+  n_unanswered_here: '이 지역 미답변 질문 {n}개', none_unanswered_here: '이 지역 질문 목록 보기',
+  translated_from: '{l}에서 자동 번역됨', translating: '번역 중…', tr_failed_q: '번역하지 못해 원문을 표시해요.', translate_this: '번역해서 보기', tr_failed: '번역하지 못해 원문을 표시해요.', tr_unavailable: '이 화면에서는 자동 번역을 쓸 수 없어요.',
+  see_original: '원문 보기 ({l})', show_translation: '번역 보기',
+  sort: '정렬', sort_newest: '최신순', sort_reward: '보상 높은 순', sort_nearest: '가까운 순', sort_unanswered: '미답변 먼저',
+  n_new: '새 메시지 {n}', in_this_area: '이 지역 질문 {n}개', empty_area: '이 지역엔 아직 질문이 없어요. 지도를 옮겨 보거나 직접 질문해 보세요.',
+  filters: '필터', category: '카테고리', min_reward: '최소 보상', any: '전체', show_completed: '완료된 질문도 표시',
+  sub_title: '이 지역 알림 받기', sub_edit: '알림 지역 수정', sub_hint: '지도를 움직여 원의 중심을 맞추세요. 이 범위에 새 질문이 올라오면 알려 드려요.', radius: '알림 반경', cats_all_hint: '고르지 않으면 전체', sub_save: '알림 받기', sub_saved: '{name} 지역 알림을 켰어요',
+  st_unanswered: '미답변', st_active: '답변 중', st_completed: '완료', st_expired: '만료', st_cancelled: '취소됨',
+  seg_browse: '둘러보기', seg_mine: '내 질문', seg_answered: '내 답변',
+  empty_browse: '조건에 맞는 진행 중 질문이 없어요. 필터를 바꿔 보세요.', empty_mine: '아직 올린 질문이 없어요.', empty_answered: '아직 답변한 질문이 없어요.', find_on_map: '지도에서 질문 찾기', selected_badge: '채택됨',
+  n_new_question: '{place} 근처에 새 질문', n_new_answer: '{name}님이 답변했어요', n_message: '{name}님의 새 메시지', n_selected: '답변이 채택됐어요. {amt}이 적립됐어요', n_closed: '참여한 질문이 마감됐어요', n_expired: '질문이 만료되어 {amt}을 환불했어요',
+  mark_all_read: '모두 읽음', sub_areas: '알림 받을 지역', add_area: '지역 추가', within: '반경 {d}', all_categories: '전체 카테고리', notifications_on: '알림 켜기', no_subs: '아직 구독한 지역이 없어요. 자주 가는 동네를 추가하면 새 질문을 바로 알려 드려요.',
+  push_note: '지금은 앱 안 알림만 보내요. 브라우저 푸시 알림은 아직 지원하지 않아요.', recent: '최근 알림', no_notifs: '새 알림이 없어요.', del_sub_q: '이 알림 지역을 삭제할까요?',
+  change_photo: '프로필 사진 바꾸기', edit_name: '이름 바꾸기', pref_language: '사용 언어 (번역 기준)',
+  stat_answers: '답변', stat_selected: '채택', stat_rate: '채택률', stat_earned: '총 수익',
+  reputation: '신뢰 등급', rep_next: '{lv}까지 채택 {n}번 남았어요', rep_max: '최고 등급이에요.', rep_need: '채택 {n}회',
+  lv0: '새내기', lv1: '로컬 헬퍼', lv2: '믿음직한 가이드', lv3: '로컬 전문가',
+  wallet: '지갑 (모의)', available: '사용 가능', reserved: '질문 보상 예약', pending_rewards: '받을 수 있는 보상', wallet_note: '모든 금액은 테스트용 모의 잔액이에요. 실제 결제는 일어나지 않아요.', top_up: '테스트 충전 {amt}', topped_up: '{amt}을 충전했어요',
+  ph_tx: '거래 내역', ph_qh: '질문 기록', ph_ah: '답변 기록', no_tx: '거래 내역이 없어요.',
+  tx_topup: '충전', tx_reserve: '질문 보상 예약', tx_reward_earned: '답변 보상', tx_refund: '환불', tx_platform_fee: '수수료',
+  txs_completed: '완료', txs_pending: '예약됨', txs_refunded: '환불됨',
+  demo_accounts: '데모 계정 전환', demo_accounts_hint: '실제 로그인 대신 테스트 계정을 바꿔 가며 질문자와 답변자를 체험해 보세요. 두 탭에서 서로 다른 계정으로 열면 실시간으로 대화가 오가요.', current: '사용 중', switched: '{name} 계정으로 바꿨어요',
+  reset_demo: '데모 데이터 초기화', reset_demo_q: '모든 질문, 대화, 지갑이 처음 상태로 돌아가요.', reset_done: '데모 데이터를 초기화했어요', demo: '데모', demo_hint: '샘플 데이터예요',
+  step_loc: '위치', step_write: '질문', step_reward: '보상', step_publish: '게시',
+  cr_where: '어디가 궁금한가요?', cr_no_loc: '아직 위치를 고르지 않았어요.', pick_on_map: '지도에서 고르기', use_my_location: '현재 위치',
+  q_title: '질문', q_title_ph: '예: 지금 이 식당 줄 길어요?', q_desc: '자세한 설명', q_desc_ph: '찾는 가게 이름, 출구 번호, 도착 예정 시간처럼 답하는 데 도움이 되는 정보를 적어 주세요.', photo: '사진', add_photo: '사진 추가',
+  cr_reward_h: '보상을 정하세요', custom_amount: '직접 입력', answerer_gets: '채택된 답변자가 받는 금액', platform_fee: '플랫폼 수수료 (20%)', expires_in: '답변 받을 시간', hours: '{n}시간',
+  reward_note: '보상은 게시할 때 지갑에서 예약되고, 답변을 채택하면 지급돼요. 채택 없이 만료되거나 취소하면 전액 돌려드려요.',
+  cr_review: '이대로 올릴까요?', publish: '질문 올리기', publish_note: '게시하면 {amt}이 예약되고 근처 답변자에게 알림이 가요.', published: '질문을 올렸어요', published_n: '질문을 올렸어요. 근처 답변자 {n}명에게 알렸어요',
+  v_loc: '위치를 먼저 골라 주세요.', v_title: '질문을 4자 이상 적어 주세요.', v_cat: '카테고리를 골라 주세요.', v_reward: '보상은 ₩100~₩100,000 사이로 정해 주세요.', v_balance: '잔액이 부족해요. 프로필에서 테스트 충전을 하세요.',
+  room_title: '질문방', select_answer: '채택하기', msg_ph: '메시지 입력', room_closed: '마감된 질문이에요', send: '보내기',
+  cmp_tr: '{name}님에게는 {l}로 번역돼 보여요', cmp_no_tr: '자동 번역을 쓸 수 없어 {name}님에게 원문이 전달돼요',
+  asked_by: '{name}님의 질문', cancel_question: '질문 취소하고 환불받기', cancel_body: '예약된 {amt}을 돌려받고, 참여한 답변자에게는 마감 알림이 가요.', refunded: '{amt}을 환불했어요',
+  b_done_q: '{name}님의 답변을 채택했어요. {amt}이 지급됐어요.', b_done_me: '내 답변이 채택됐어요! {amt}이 적립됐어요.', b_done_other: '다른 답변이 채택되어 마감된 질문이에요.',
+  b_expired_q: '답변 시간이 지나 보상을 환불했어요.', b_expired: '답변 시간이 지난 질문이에요.', b_cancel_q: '질문을 취소하고 보상을 환불했어요.', b_cancel: '질문자가 취소한 질문이에요.',
+  by_answerer: '답변자별', all_messages: '전체 메시지', no_answerers_yet: '아직 답변자가 없어요. 근처 답변자에게 알림이 갔어요.', joined_no_msg: '참여했어요. 아직 메시지가 없어요.',
+  privacy_q: '각 답변자는 나와의 대화만 볼 수 있어요.', privacy_a: '이 대화는 질문자와 나만 볼 수 있어요. 다른 답변자의 대화는 보이지 않아요.',
+  no_messages: '아직 메시지가 없어요.', join_hint: '이 질문에 답하면 질문자와 1:1 대화가 열려요. 채택되면 보상을 받아요.', answer_this: '답변하기', first_answer_hint: '첫 답변을 보내 보세요. 지금 보이는 상황을 구체적으로 알려 주면 채택될 확률이 높아요.',
+  read: '읽음', to_name: '{name}님에게', select_q: '{name}님의 답변을 채택할까요?', select_body: '보상 {amt} 중 {pay}이 지급되고 수수료 {fee}가 차감돼요. 채택하면 되돌릴 수 없어요.', selected_toast: '{name}님에게 {amt}을 지급했어요',
+  just_now: '방금 전', min_ago: '{n}분 전', hr_ago: '{n}시간 전', day_ago: '{n}일 전', min_left: '{n}분 남음', hr_left: '{n}시간 남음',
+  loc_finding: '현재 위치를 찾는 중…', loc_denied: '현재 위치를 가져올 수 없어요. 위치 권한을 확인하거나 장소를 검색하세요.', loc_outside: '현재 위치가 서울 지도 밖이에요. 장소를 검색해 주세요.',
+  err_invalid: '입력한 내용을 확인해 주세요.', err_reward: '보상 금액을 확인해 주세요.', err_balance: '잔액이 부족해요.', err_closed: '이미 마감된 질문이에요.', err_own: '내 질문에는 답변할 수 없어요.', err_forbidden: '이 대화에 접근할 수 없어요.', err_noanswer: '메시지를 보낸 답변자만 채택할 수 있어요.', err_already: '이미 채택이 끝난 질문이에요.', err_reserve: '예약된 보상이 부족해 지급할 수 없어요.', err_image: '이미지를 불러오지 못했어요.', err_storage: '저장 공간이 가득 찼어요. 사진을 줄이거나 데모 데이터를 초기화하세요.',
+  cat_restaurants: '맛집·카페', cat_transport: '교통', cat_shopping: '쇼핑', cat_attractions: '관광지', cat_waiting: '대기 시간', cat_local: '현지 추천', cat_safety: '안전', cat_other: '기타',
+},
+en: {
+  tab_map: 'Map', tab_questions: 'Questions', tab_create: 'Ask', tab_notifications: 'Alerts', tab_profile: 'Profile',
+  mode_ask: 'Ask', mode_answer: 'Answer', mode_label: 'Switch mode', mode_ask_toast: 'Ask mode. Tap the map to pick a spot.', mode_answer_toast: 'Answer mode. Find questions on the map.',
+  language: 'Language', region_label: 'Current area: {name}. Tap to search places', search_ph: 'Search a place or area', search_none: 'No matching place. Try another name.', popular_areas: 'Popular areas',
+  ctl_locate: 'My location', ctl_zoom_in: 'Zoom in', ctl_zoom_out: 'Zoom out', ctl_filter: 'Filters', ctl_subscribe: 'Get alerts for this area', ctl_list: 'Show list', ctl_map: 'Show map',
+  cluster_label: '{n} questions. Tap to zoom in', up_to: 'up to {amt}', my_location: 'My location',
+  pick_hint: 'Tap the map to choose where your question is about', cancel: 'Cancel', close: 'Close', back: 'Back', next: 'Next', change: 'Change', retry: 'Retry', apply: 'Apply', reset: 'Reset', delete: 'Delete', edit: 'Edit', save_changes: 'Save', optional: 'optional',
+  preview_label: 'Question preview', open_my_room: 'Open my question room', continue_chat: 'Continue chat', view_question: 'View question', answer_now: 'Answer now',
+  n_answerers: '{n} answering', selected_location: 'Selected spot', ask_here: 'Ask about this spot', ask_hint: 'Tap a spot on the map or search for a place.', ask_question: 'Ask a question',
+  n_unanswered_here: '{n} unanswered here', none_unanswered_here: 'See questions in this area',
+  translated_from: 'Auto-translated from {l}', translating: 'Translating…', tr_failed_q: 'Couldn’t translate. Showing the original.', translate_this: 'Translate', tr_failed: 'Couldn’t translate. Showing the original.', tr_unavailable: 'Auto-translation isn’t available here.',
+  see_original: 'See original ({l})', show_translation: 'Show translation',
+  sort: 'Sort', sort_newest: 'Newest', sort_reward: 'Highest reward', sort_nearest: 'Nearest', sort_unanswered: 'Unanswered first',
+  n_new: '{n} new', in_this_area: '{n} questions in this area', empty_area: 'No questions here yet. Move the map or ask one yourself.',
+  filters: 'Filters', category: 'Category', min_reward: 'Minimum reward', any: 'Any', show_completed: 'Show completed questions',
+  sub_title: 'Get alerts for this area', sub_edit: 'Edit alert area', sub_hint: 'Move the map to center the circle. We’ll alert you when a new question is posted inside it.', radius: 'Radius', cats_all_hint: 'none = all', sub_save: 'Turn on alerts', sub_saved: 'Alerts on for {name}',
+  st_unanswered: 'Unanswered', st_active: 'Active', st_completed: 'Completed', st_expired: 'Expired', st_cancelled: 'Cancelled',
+  seg_browse: 'Browse', seg_mine: 'My questions', seg_answered: 'My answers',
+  empty_browse: 'No open questions match. Try changing the filters.', empty_mine: 'You haven’t asked anything yet.', empty_answered: 'You haven’t answered any questions yet.', find_on_map: 'Find questions on the map', selected_badge: 'Selected',
+  n_new_question: 'New question near {place}', n_new_answer: '{name} answered your question', n_message: 'New message from {name}', n_selected: 'Your answer was selected. {amt} added', n_closed: 'A question you joined has closed', n_expired: 'Question expired. {amt} refunded',
+  mark_all_read: 'Mark all read', sub_areas: 'Alert areas', add_area: 'Add area', within: 'within {d}', all_categories: 'All categories', notifications_on: 'Alerts on', no_subs: 'No alert areas yet. Add a neighborhood you know and we’ll tell you about new questions there.',
+  push_note: 'Alerts appear inside the app for now. Browser push notifications aren’t supported yet.', recent: 'Recent', no_notifs: 'No alerts yet.', del_sub_q: 'Delete this alert area?',
+  change_photo: 'Change photo', edit_name: 'Change name', pref_language: 'Language (used for translation)',
+  stat_answers: 'Answers', stat_selected: 'Selected', stat_rate: 'Selection rate', stat_earned: 'Total earned',
+  reputation: 'Reputation', rep_next: '{n} more selected answers to {lv}', rep_max: 'You’re at the top level.', rep_need: '{n} selected',
+  lv0: 'Beginner', lv1: 'Local Helper', lv2: 'Trusted Guide', lv3: 'Local Expert',
+  wallet: 'Wallet (simulated)', available: 'Available', reserved: 'Reserved for questions', pending_rewards: 'Pending rewards', wallet_note: 'All amounts are simulated test balances. No real payments happen.', top_up: 'Add {amt} test funds', topped_up: 'Added {amt}',
+  ph_tx: 'Transactions', ph_qh: 'Question history', ph_ah: 'Answer history', no_tx: 'No transactions yet.',
+  tx_topup: 'Top-up', tx_reserve: 'Reward reserved', tx_reward_earned: 'Answer reward', tx_refund: 'Refund', tx_platform_fee: 'Fee',
+  txs_completed: 'Done', txs_pending: 'Reserved', txs_refunded: 'Refunded',
+  demo_accounts: 'Switch demo account', demo_accounts_hint: 'Instead of real sign-in, switch between test accounts to try both roles. Open two tabs with different accounts to see messages arrive live.', current: 'Current', switched: 'Switched to {name}',
+  reset_demo: 'Reset demo data', reset_demo_q: 'All questions, chats and wallets go back to the starting state.', reset_done: 'Demo data reset', demo: 'Demo', demo_hint: 'Sample data',
+  step_loc: 'Place', step_write: 'Question', step_reward: 'Reward', step_publish: 'Publish',
+  cr_where: 'Where are you curious about?', cr_no_loc: 'No place chosen yet.', pick_on_map: 'Pick on map', use_my_location: 'Current location',
+  q_title: 'Question', q_title_ph: 'e.g. Is the line at this restaurant long right now?', q_desc: 'Details', q_desc_ph: 'Add anything that helps someone answer: shop name, exit number, when you’ll arrive.', photo: 'Photo', add_photo: 'Add photo',
+  cr_reward_h: 'Set a reward', custom_amount: 'Custom amount', answerer_gets: 'Selected answerer receives', platform_fee: 'Platform fee (20%)', expires_in: 'Open for', hours: '{n} h',
+  reward_note: 'The reward is reserved from your wallet when you publish and paid when you select an answer. If it expires or you cancel without selecting, you get it all back.',
+  cr_review: 'Ready to publish?', publish: 'Publish question', publish_note: 'Publishing reserves {amt} and alerts answerers nearby.', published: 'Question published', published_n: 'Question published. {n} nearby answerers alerted',
+  v_loc: 'Choose a place first.', v_title: 'Write at least 4 characters.', v_cat: 'Choose a category.', v_reward: 'Set a reward between ₩100 and ₩100,000.', v_balance: 'Not enough balance. Add test funds in Profile.',
+  room_title: 'Question room', select_answer: 'Select', msg_ph: 'Write a message', room_closed: 'This question is closed', send: 'Send',
+  cmp_tr: '{name} will see this in {l}', cmp_no_tr: 'Auto-translation unavailable. {name} will see your original text',
+  asked_by: 'Asked by {name}', cancel_question: 'Cancel question and refund', cancel_body: 'You get the reserved {amt} back, and anyone answering is told it closed.', refunded: '{amt} refunded',
+  b_done_q: 'You selected {name}’s answer. {amt} was paid.', b_done_me: 'Your answer was selected! {amt} added to your wallet.', b_done_other: 'Another answer was selected. This question is closed.',
+  b_expired_q: 'Time ran out, so your reward was refunded.', b_expired: 'This question has expired.', b_cancel_q: 'You cancelled this question and got a refund.', b_cancel: 'The asker cancelled this question.',
+  by_answerer: 'By answerer', all_messages: 'All messages', no_answerers_yet: 'No answers yet. Nearby answerers have been alerted.', joined_no_msg: 'Joined. No messages yet.',
+  privacy_q: 'Each answerer sees only their own chat with you.', privacy_a: 'Only you and the asker can see this chat. Other answerers’ chats are hidden.',
+  no_messages: 'No messages yet.', join_hint: 'Answering opens a private chat with the asker. If your answer is selected, you get the reward.', answer_this: 'Answer this', first_answer_hint: 'Send your first answer. Specific details about what you see right now are most likely to be selected.',
+  read: 'Read', to_name: 'To {name}', select_q: 'Select {name}’s answer?', select_body: 'From the {amt} reward, {pay} is paid and a {fee} fee is deducted. This can’t be undone.', selected_toast: 'Paid {amt} to {name}',
+  just_now: 'just now', min_ago: '{n} min ago', hr_ago: '{n} h ago', day_ago: '{n} d ago', min_left: '{n} min left', hr_left: '{n} h left',
+  loc_finding: 'Finding your location…', loc_denied: 'Couldn’t get your location. Check location permission or search for a place.', loc_outside: 'You’re outside the Seoul map. Search for a place instead.',
+  err_invalid: 'Check what you entered.', err_reward: 'Check the reward amount.', err_balance: 'Not enough balance.', err_closed: 'This question is already closed.', err_own: 'You can’t answer your own question.', err_forbidden: 'You don’t have access to this chat.', err_noanswer: 'Only answerers who sent a message can be selected.', err_already: 'An answer was already selected.', err_reserve: 'Reserved funds are too low to pay out.', err_image: 'Couldn’t load that image.', err_storage: 'Storage is full. Use smaller photos or reset demo data.',
+  cat_restaurants: 'Food & cafés', cat_transport: 'Transport', cat_shopping: 'Shopping', cat_attractions: 'Attractions', cat_waiting: 'Wait times', cat_local: 'Local tips', cat_safety: 'Safety', cat_other: 'Other',
+},
+ja: {
+  tab_map: '地図', tab_questions: '質問', tab_create: '質問する', tab_notifications: '通知', tab_profile: 'プロフィール',
+  mode_ask: '質問者', mode_answer: '回答者', mode_label: 'モード切替', mode_ask_toast: '質問者モードです。地図をタップして場所を選んでください。', mode_answer_toast: '回答者モードです。地図で質問を探しましょう。',
+  language: '言語', region_label: '現在のエリア：{name}。タップで場所を検索', search_ph: '場所・エリアを検索', search_none: '見つかりません。別の名前で検索してください。', popular_areas: '人気のエリア',
+  ctl_locate: '現在地', ctl_zoom_in: '拡大', ctl_zoom_out: '縮小', ctl_filter: '絞り込み', ctl_subscribe: 'このエリアの通知を受け取る', ctl_list: 'リスト表示', ctl_map: '地図表示',
+  cluster_label: '質問{n}件。タップで拡大', up_to: '最大{amt}', my_location: '現在地',
+  pick_hint: '地図をタップして質問する場所を選んでください', cancel: 'キャンセル', close: '閉じる', back: '戻る', next: '次へ', change: '変更', retry: '再試行', apply: '適用', reset: 'リセット', delete: '削除', edit: '編集', save_changes: '保存', optional: '任意',
+  preview_label: '質問プレビュー', open_my_room: '自分の質問ルームを開く', continue_chat: '会話を続ける', view_question: '質問を見る', answer_now: '今すぐ回答',
+  n_answerers: '{n}人が回答', selected_location: '選んだ場所', ask_here: 'この場所について質問', ask_hint: '地図で気になる場所をタップするか、場所を検索してください。', ask_question: '質問する',
+  n_unanswered_here: 'このエリアの未回答 {n}件', none_unanswered_here: 'このエリアの質問一覧',
+  translated_from: '{l}から自動翻訳', translating: '翻訳中…', tr_failed_q: '翻訳できなかったため原文を表示しています。', translate_this: '翻訳して表示', tr_failed: '翻訳できなかったため原文を表示しています。', tr_unavailable: 'この画面では自動翻訳を使えません。',
+  see_original: '原文を見る（{l}）', show_translation: '翻訳を見る',
+  sort: '並び替え', sort_newest: '新着順', sort_reward: '報酬が高い順', sort_nearest: '近い順', sort_unanswered: '未回答を優先',
+  n_new: '新着{n}', in_this_area: 'このエリアの質問 {n}件', empty_area: 'このエリアにはまだ質問がありません。地図を動かすか、自分で質問してみましょう。',
+  filters: '絞り込み', category: 'カテゴリー', min_reward: '最低報酬', any: 'すべて', show_completed: '完了した質問も表示',
+  sub_title: 'このエリアの通知を受け取る', sub_edit: '通知エリアを編集', sub_hint: '地図を動かして円の中心を合わせてください。範囲内に新しい質問が投稿されるとお知らせします。', radius: '半径', cats_all_hint: '未選択ならすべて', sub_save: '通知をオンにする', sub_saved: '{name}の通知をオンにしました',
+  st_unanswered: '未回答', st_active: '回答中', st_completed: '完了', st_expired: '期限切れ', st_cancelled: 'キャンセル',
+  seg_browse: '探す', seg_mine: '自分の質問', seg_answered: '自分の回答',
+  empty_browse: '条件に合う受付中の質問はありません。絞り込みを変えてみてください。', empty_mine: 'まだ質問していません。', empty_answered: 'まだ回答していません。', find_on_map: '地図で質問を探す', selected_badge: '採用',
+  n_new_question: '{place}付近に新しい質問', n_new_answer: '{name}さんが回答しました', n_message: '{name}さんから新着メッセージ', n_selected: '回答が採用されました。{amt}を獲得', n_closed: '参加した質問が締め切られました', n_expired: '質問が期限切れになり{amt}を返金しました',
+  mark_all_read: 'すべて既読', sub_areas: '通知エリア', add_area: 'エリアを追加', within: '半径{d}', all_categories: '全カテゴリー', notifications_on: '通知オン', no_subs: 'まだ通知エリアがありません。よく知っている地域を追加すると、新しい質問をすぐにお知らせします。',
+  push_note: '現在はアプリ内通知のみです。ブラウザのプッシュ通知にはまだ対応していません。', recent: '最近の通知', no_notifs: '通知はありません。', del_sub_q: 'この通知エリアを削除しますか？',
+  change_photo: '写真を変更', edit_name: '名前を変更', pref_language: '使用言語（翻訳の基準）',
+  stat_answers: '回答', stat_selected: '採用', stat_rate: '採用率', stat_earned: '総収益',
+  reputation: '信頼レベル', rep_next: '{lv}まであと採用{n}回', rep_max: '最高レベルです。', rep_need: '採用{n}回',
+  lv0: 'ビギナー', lv1: 'ローカルヘルパー', lv2: '信頼できるガイド', lv3: 'ローカルエキスパート',
+  wallet: 'ウォレット（模擬）', available: '利用可能', reserved: '質問報酬として予約中', pending_rewards: '受け取り待ちの報酬', wallet_note: '金額はすべてテスト用の模擬残高です。実際の決済は行われません。', top_up: 'テスト入金 {amt}', topped_up: '{amt}を入金しました',
+  ph_tx: '取引履歴', ph_qh: '質問履歴', ph_ah: '回答履歴', no_tx: '取引履歴はありません。',
+  tx_topup: '入金', tx_reserve: '報酬の予約', tx_reward_earned: '回答報酬', tx_refund: '返金', tx_platform_fee: '手数料',
+  txs_completed: '完了', txs_pending: '予約中', txs_refunded: '返金済み',
+  demo_accounts: 'デモアカウント切替', demo_accounts_hint: '実際のログインの代わりにテストアカウントを切り替えて両方の役割を試せます。2つのタブで別々のアカウントを開くと、メッセージがリアルタイムで届きます。', current: '使用中', switched: '{name}に切り替えました',
+  reset_demo: 'デモデータをリセット', reset_demo_q: 'すべての質問・会話・ウォレットが初期状態に戻ります。', reset_done: 'デモデータをリセットしました', demo: 'デモ', demo_hint: 'サンプルデータです',
+  step_loc: '場所', step_write: '質問', step_reward: '報酬', step_publish: '投稿',
+  cr_where: 'どこが気になりますか？', cr_no_loc: 'まだ場所を選んでいません。', pick_on_map: '地図で選ぶ', use_my_location: '現在地',
+  q_title: '質問', q_title_ph: '例：このお店、今並んでいますか？', q_desc: '詳細', q_desc_ph: '店名、出口番号、到着予定時刻など、回答に役立つ情報を書いてください。', photo: '写真', add_photo: '写真を追加',
+  cr_reward_h: '報酬を設定', custom_amount: '金額を入力', answerer_gets: '採用された回答者の受取額', platform_fee: 'プラットフォーム手数料（20%）', expires_in: '受付時間', hours: '{n}時間',
+  reward_note: '報酬は投稿時にウォレットから予約され、回答を採用すると支払われます。採用せずに期限切れまたはキャンセルした場合は全額返金されます。',
+  cr_review: 'この内容で投稿しますか？', publish: '質問を投稿', publish_note: '投稿すると{amt}が予約され、近くの回答者に通知されます。', published: '質問を投稿しました', published_n: '質問を投稿しました。近くの回答者{n}人に通知しました',
+  v_loc: '先に場所を選んでください。', v_title: '4文字以上で書いてください。', v_cat: 'カテゴリーを選んでください。', v_reward: '報酬は₩100〜₩100,000で設定してください。', v_balance: '残高が足りません。プロフィールでテスト入金してください。',
+  room_title: '質問ルーム', select_answer: '採用する', msg_ph: 'メッセージを入力', room_closed: '締め切られた質問です', send: '送信',
+  cmp_tr: '{name}さんには{l}に翻訳されて表示されます', cmp_no_tr: '自動翻訳を使えないため、{name}さんには原文が届きます',
+  asked_by: '{name}さんの質問', cancel_question: '質問を取り消して返金', cancel_body: '予約した{amt}が戻り、回答中の人には締め切りが通知されます。', refunded: '{amt}を返金しました',
+  b_done_q: '{name}さんの回答を採用しました。{amt}を支払いました。', b_done_me: 'あなたの回答が採用されました！{amt}を獲得しました。', b_done_other: '他の回答が採用され、締め切られた質問です。',
+  b_expired_q: '受付時間が過ぎたため報酬を返金しました。', b_expired: '受付時間が過ぎた質問です。', b_cancel_q: '質問を取り消し、報酬を返金しました。', b_cancel: '質問者が取り消した質問です。',
+  by_answerer: '回答者別', all_messages: '全メッセージ', no_answerers_yet: 'まだ回答者はいません。近くの回答者に通知しました。', joined_no_msg: '参加しました。まだメッセージはありません。',
+  privacy_q: '各回答者はあなたとの会話だけを見られます。', privacy_a: 'この会話は質問者とあなただけが見られます。他の回答者の会話は表示されません。',
+  no_messages: 'まだメッセージはありません。', join_hint: '回答すると質問者との1対1チャットが始まります。採用されると報酬がもらえます。', answer_this: '回答する', first_answer_hint: '最初の回答を送りましょう。今見えている状況を具体的に伝えると採用されやすくなります。',
+  read: '既読', to_name: '{name}さんへ', select_q: '{name}さんの回答を採用しますか？', select_body: '報酬{amt}のうち{pay}が支払われ、手数料{fee}が差し引かれます。採用は取り消せません。', selected_toast: '{name}さんに{amt}を支払いました',
+  just_now: 'たった今', min_ago: '{n}分前', hr_ago: '{n}時間前', day_ago: '{n}日前', min_left: '残り{n}分', hr_left: '残り{n}時間',
+  loc_finding: '現在地を取得中…', loc_denied: '現在地を取得できません。位置情報の許可を確認するか、場所を検索してください。', loc_outside: '現在地がソウルの地図の外です。場所を検索してください。',
+  err_invalid: '入力内容を確認してください。', err_reward: '報酬額を確認してください。', err_balance: '残高が足りません。', err_closed: 'すでに締め切られた質問です。', err_own: '自分の質問には回答できません。', err_forbidden: 'この会話にはアクセスできません。', err_noanswer: 'メッセージを送った回答者のみ採用できます。', err_already: 'すでに採用済みの質問です。', err_reserve: '予約残高が足りず支払えません。', err_image: '画像を読み込めませんでした。', err_storage: '保存容量がいっぱいです。写真を小さくするか、デモデータをリセットしてください。',
+  cat_restaurants: 'グルメ・カフェ', cat_transport: '交通', cat_shopping: 'ショッピング', cat_attractions: '観光地', cat_waiting: '待ち時間', cat_local: '地元のおすすめ', cat_safety: '安全', cat_other: 'その他',
+},
+zh: {
+  tab_map: '地图', tab_questions: '问题', tab_create: '提问', tab_notifications: '通知', tab_profile: '我的',
+  mode_ask: '提问者', mode_answer: '回答者', mode_label: '切换模式', mode_ask_toast: '提问者模式。点击地图选择地点。', mode_answer_toast: '回答者模式。在地图上寻找问题。',
+  language: '语言', region_label: '当前区域：{name}。点击搜索地点', search_ph: '搜索地点或区域', search_none: '没有找到该地点，请换个名称试试。', popular_areas: '热门区域',
+  ctl_locate: '我的位置', ctl_zoom_in: '放大', ctl_zoom_out: '缩小', ctl_filter: '筛选', ctl_subscribe: '接收此区域的通知', ctl_list: '列表视图', ctl_map: '地图视图',
+  cluster_label: '{n}个问题，点击放大', up_to: '最高{amt}', my_location: '我的位置',
+  pick_hint: '点击地图选择要提问的地点', cancel: '取消', close: '关闭', back: '返回', next: '下一步', change: '更改', retry: '重试', apply: '应用', reset: '重置', delete: '删除', edit: '编辑', save_changes: '保存', optional: '可选',
+  preview_label: '问题预览', open_my_room: '打开我的问题房间', continue_chat: '继续聊天', view_question: '查看问题', answer_now: '立即回答',
+  n_answerers: '{n}人回答', selected_location: '已选地点', ask_here: '就此地点提问', ask_hint: '点击地图上的地点或搜索地点。', ask_question: '提问',
+  n_unanswered_here: '此区域有{n}个未回答问题', none_unanswered_here: '查看此区域的问题',
+  translated_from: '由{l}自动翻译', translating: '翻译中…', tr_failed_q: '翻译失败，显示原文。', translate_this: '翻译', tr_failed: '翻译失败，显示原文。', tr_unavailable: '此界面无法使用自动翻译。',
+  see_original: '查看原文（{l}）', show_translation: '查看译文',
+  sort: '排序', sort_newest: '最新', sort_reward: '奖励最高', sort_nearest: '最近', sort_unanswered: '未回答优先',
+  n_new: '{n}条新消息', in_this_area: '此区域有{n}个问题', empty_area: '此区域还没有问题。移动地图或自己提问吧。',
+  filters: '筛选', category: '类别', min_reward: '最低奖励', any: '全部', show_completed: '显示已完成的问题',
+  sub_title: '接收此区域的通知', sub_edit: '编辑通知区域', sub_hint: '移动地图对准圆心。范围内有新问题时会通知你。', radius: '半径', cats_all_hint: '不选即全部', sub_save: '开启通知', sub_saved: '已开启{name}的通知',
+  st_unanswered: '未回答', st_active: '回答中', st_completed: '已完成', st_expired: '已过期', st_cancelled: '已取消',
+  seg_browse: '浏览', seg_mine: '我的问题', seg_answered: '我的回答',
+  empty_browse: '没有符合条件的进行中问题，请调整筛选。', empty_mine: '你还没有提问。', empty_answered: '你还没有回答问题。', find_on_map: '在地图上找问题', selected_badge: '已采纳',
+  n_new_question: '{place}附近有新问题', n_new_answer: '{name}回答了你的问题', n_message: '{name}发来新消息', n_selected: '你的回答被采纳，获得{amt}', n_closed: '你参与的问题已结束', n_expired: '问题已过期，已退还{amt}',
+  mark_all_read: '全部已读', sub_areas: '通知区域', add_area: '添加区域', within: '半径{d}', all_categories: '全部类别', notifications_on: '开启通知', no_subs: '还没有通知区域。添加熟悉的街区，有新问题时马上通知你。',
+  push_note: '目前仅提供应用内通知，暂不支持浏览器推送通知。', recent: '最近通知', no_notifs: '暂无通知。', del_sub_q: '删除此通知区域？',
+  change_photo: '更换头像', edit_name: '修改名称', pref_language: '使用语言（翻译基准）',
+  stat_answers: '回答', stat_selected: '采纳', stat_rate: '采纳率', stat_earned: '总收入',
+  reputation: '信誉等级', rep_next: '再被采纳{n}次升至{lv}', rep_max: '已达最高等级。', rep_need: '采纳{n}次',
+  lv0: '新手', lv1: '本地帮手', lv2: '可靠向导', lv3: '本地专家',
+  wallet: '钱包（模拟）', available: '可用余额', reserved: '已预留的问题奖励', pending_rewards: '待领取奖励', wallet_note: '所有金额均为测试用模拟余额，不会产生真实支付。', top_up: '测试充值{amt}', topped_up: '已充值{amt}',
+  ph_tx: '交易记录', ph_qh: '提问记录', ph_ah: '回答记录', no_tx: '暂无交易记录。',
+  tx_topup: '充值', tx_reserve: '预留奖励', tx_reward_earned: '回答奖励', tx_refund: '退款', tx_platform_fee: '手续费',
+  txs_completed: '完成', txs_pending: '已预留', txs_refunded: '已退款',
+  demo_accounts: '切换演示账号', demo_accounts_hint: '无需真实登录，切换测试账号即可体验两种角色。在两个标签页中用不同账号打开，可以看到消息实时到达。', current: '当前', switched: '已切换到{name}',
+  reset_demo: '重置演示数据', reset_demo_q: '所有问题、聊天和钱包都将恢复初始状态。', reset_done: '演示数据已重置', demo: '演示', demo_hint: '示例数据',
+  step_loc: '地点', step_write: '问题', step_reward: '奖励', step_publish: '发布',
+  cr_where: '你想了解哪里？', cr_no_loc: '还没有选择地点。', pick_on_map: '在地图上选择', use_my_location: '当前位置',
+  q_title: '问题', q_title_ph: '例：这家餐厅现在排队长吗？', q_desc: '详细说明', q_desc_ph: '写下有助于回答的信息，例如店名、出口编号、预计到达时间。', photo: '照片', add_photo: '添加照片',
+  cr_reward_h: '设置奖励', custom_amount: '自定义金额', answerer_gets: '被采纳者获得', platform_fee: '平台手续费（20%）', expires_in: '开放时间', hours: '{n}小时',
+  reward_note: '发布时奖励会从钱包中预留，采纳回答时支付。若未采纳而过期或取消，将全额退还。',
+  cr_review: '确认发布？', publish: '发布问题', publish_note: '发布后将预留{amt}，并通知附近的回答者。', published: '问题已发布', published_n: '问题已发布，已通知附近{n}位回答者',
+  v_loc: '请先选择地点。', v_title: '请至少输入4个字。', v_cat: '请选择类别。', v_reward: '奖励请设置在₩100至₩100,000之间。', v_balance: '余额不足，请在“我的”中测试充值。',
+  room_title: '问题房间', select_answer: '采纳', msg_ph: '输入消息', room_closed: '问题已结束', send: '发送',
+  cmp_tr: '{name}将看到{l}译文', cmp_no_tr: '无法自动翻译，{name}将看到原文',
+  asked_by: '{name}的问题', cancel_question: '取消问题并退款', cancel_body: '预留的{amt}将退还，回答者会收到结束通知。', refunded: '已退还{amt}',
+  b_done_q: '已采纳{name}的回答，已支付{amt}。', b_done_me: '你的回答被采纳了！已获得{amt}。', b_done_other: '已采纳其他回答，问题已结束。',
+  b_expired_q: '回答时间已过，奖励已退还。', b_expired: '该问题已过期。', b_cancel_q: '你已取消问题并获得退款。', b_cancel: '提问者已取消该问题。',
+  by_answerer: '按回答者', all_messages: '全部消息', no_answerers_yet: '还没有回答者，已通知附近的回答者。', joined_no_msg: '已加入，暂无消息。',
+  privacy_q: '每位回答者只能看到与你的对话。', privacy_a: '只有你和提问者能看到此对话，其他回答者的对话不可见。',
+  no_messages: '暂无消息。', join_hint: '回答后将与提问者开启一对一聊天。被采纳即可获得奖励。', answer_this: '回答', first_answer_hint: '发送你的第一条回答吧。具体描述你现在看到的情况更容易被采纳。',
+  read: '已读', to_name: '发给{name}', select_q: '采纳{name}的回答？', select_body: '在{amt}奖励中，将支付{pay}并扣除{fee}手续费。采纳后无法撤销。', selected_toast: '已向{name}支付{amt}',
+  just_now: '刚刚', min_ago: '{n}分钟前', hr_ago: '{n}小时前', day_ago: '{n}天前', min_left: '剩{n}分钟', hr_left: '剩{n}小时',
+  loc_finding: '正在获取当前位置…', loc_denied: '无法获取当前位置。请检查定位权限或搜索地点。', loc_outside: '你当前不在首尔地图范围内，请搜索地点。',
+  err_invalid: '请检查输入内容。', err_reward: '请检查奖励金额。', err_balance: '余额不足。', err_closed: '该问题已结束。', err_own: '不能回答自己的问题。', err_forbidden: '无权访问此对话。', err_noanswer: '只能采纳发送过消息的回答者。', err_already: '该问题已采纳过回答。', err_reserve: '预留金额不足，无法支付。', err_image: '无法加载图片。', err_storage: '存储空间已满。请使用更小的照片或重置演示数据。',
+  cat_restaurants: '美食·咖啡', cat_transport: '交通', cat_shopping: '购物', cat_attractions: '景点', cat_waiting: '排队时间', cat_local: '本地推荐', cat_safety: '安全', cat_other: '其他',
+},
+};
+// ===== Static geography (approximate, for the built-in Seoul map) =====
+const LNG0 = 126.76, LAT0 = 37.72, KX = 8830, KY = 11100; // world units = ~10 m
+const WORLD = { w: (127.22 - LNG0) * KX, h: (LAT0 - 37.42) * KY };
+const proj = (lat, lng) => ({ x: (lng - LNG0) * KX, y: (LAT0 - lat) * KY });
+const unproj = (x, y) => ({ lat: LAT0 - y / KY, lng: LNG0 + x / KX });
+const inSeoul = (lat, lng) => lat > 37.42 && lat < 37.72 && lng > 126.76 && lng < 127.22;
+
+const PLACES = [
+  ['홍대입구역', 'Hongik Univ. Station', 37.5572, 126.9245, '마포구 양화로 160'],
+  ['연남동', 'Yeonnam-dong', 37.5660, 126.9250, '마포구 연남동'],
+  ['합정역', 'Hapjeong Station', 37.5496, 126.9139, '마포구 양화로 45'],
+  ['망원시장', 'Mangwon Market', 37.5560, 126.9060, '마포구 포은로8길 14'],
+  ['신촌역', 'Sinchon Station', 37.5551, 126.9368, '서대문구 신촌로 90'],
+  ['명동', 'Myeongdong', 37.5636, 126.9850, '중구 명동길'],
+  ['남대문시장', 'Namdaemun Market', 37.5592, 126.9776, '중구 남대문시장4길 21'],
+  ['서울역', 'Seoul Station', 37.5547, 126.9707, '용산구 한강대로 405'],
+  ['남산서울타워', 'N Seoul Tower', 37.5512, 126.9882, '용산구 남산공원길 105'],
+  ['이태원역', 'Itaewon Station', 37.5345, 126.9946, '용산구 이태원로 177'],
+  ['한남동', 'Hannam-dong', 37.5341, 127.0010, '용산구 한남동'],
+  ['경복궁', 'Gyeongbokgung Palace', 37.5796, 126.9770, '종로구 사직로 161'],
+  ['광화문', 'Gwanghwamun', 37.5759, 126.9768, '종로구 세종대로 172'],
+  ['북촌한옥마을', 'Bukchon Hanok Village', 37.5826, 126.9830, '종로구 계동길 37'],
+  ['인사동', 'Insadong', 37.5740, 126.9850, '종로구 인사동길'],
+  ['익선동', 'Ikseon-dong', 37.5743, 126.9893, '종로구 익선동'],
+  ['창덕궁', 'Changdeokgung Palace', 37.5794, 126.9910, '종로구 율곡로 99'],
+  ['광장시장', 'Gwangjang Market', 37.5701, 126.9996, '종로구 창경궁로 88'],
+  ['동대문디자인플라자', 'Dongdaemun Design Plaza', 37.5665, 127.0092, '중구 을지로 281'],
+  ['성수역', 'Seongsu Station', 37.5446, 127.0557, '성동구 아차산로 100'],
+  ['서울숲', 'Seoul Forest', 37.5444, 127.0374, '성동구 뚝섬로 273'],
+  ['건대입구역', 'Konkuk Univ. Station', 37.5404, 127.0700, '광진구 아차산로 243'],
+  ['강남역', 'Gangnam Station', 37.4979, 127.0276, '강남구 강남대로 396'],
+  ['가로수길', 'Garosu-gil', 37.5205, 127.0230, '강남구 신사동'],
+  ['압구정로데오', 'Apgujeong Rodeo', 37.5273, 127.0405, '강남구 압구정로'],
+  ['코엑스', 'COEX', 37.5116, 127.0595, '강남구 영동대로 513'],
+  ['롯데월드', 'Lotte World', 37.5111, 127.0980, '송파구 올림픽로 240'],
+  ['롯데월드타워', 'Lotte World Tower', 37.5126, 127.1025, '송파구 올림픽로 300'],
+  ['여의도 한강공원', 'Yeouido Hangang Park', 37.5284, 126.9330, '영등포구 여의동로 330'],
+  ['더현대 서울', 'The Hyundai Seoul', 37.5259, 126.9284, '영등포구 여의대로 108'],
+  ['노량진수산시장', 'Noryangjin Fish Market', 37.5135, 126.9405, '동작구 노들로 674'],
+  ['용산역', 'Yongsan Station', 37.5299, 126.9648, '용산구 한강대로23길 55'],
+].map(([ko, en, lat, lng, addr], i) => ({ id: 'p' + i, ko, en, lat, lng, addr }));
+
+const HOODS = [
+  ['hongdae', '홍대', 'Hongdae', '弘大', '弘大', 37.5563, 126.9236],
+  ['myeongdong', '명동', 'Myeongdong', '明洞', '明洞', 37.5636, 126.9850],
+  ['seongsu', '성수', 'Seongsu', '聖水', '圣水', 37.5445, 127.0560],
+  ['gangnam', '강남', 'Gangnam', '江南', '江南', 37.4979, 127.0276],
+  ['itaewon', '이태원', 'Itaewon', '梨泰院', '梨泰院', 37.5345, 126.9946],
+  ['gyeongbok', '경복궁', 'Gyeongbokgung', '景福宮', '景福宫', 37.5796, 126.9770],
+  ['jongno', '종로', 'Jongno', '鍾路', '钟路', 37.5720, 126.9920],
+  ['seoulstn', '서울역', 'Seoul Station', 'ソウル駅', '首尔站', 37.5547, 126.9707],
+  ['namsan', '남산', 'Namsan', '南山', '南山', 37.5512, 126.9882],
+  ['yeouido', '여의도', 'Yeouido', '汝矣島', '汝矣岛', 37.5259, 126.9284],
+  ['jamsil', '잠실', 'Jamsil', '蚕室', '蚕室', 37.5112, 127.0981],
+  ['sinchon', '신촌', 'Sinchon', '新村', '新村', 37.5551, 126.9368],
+  ['dongdaemun', '동대문', 'Dongdaemun', '東大門', '东大门', 37.5665, 127.0092],
+  ['apgujeong', '압구정', 'Apgujeong', '狎鴎亭', '狎鸥亭', 37.5273, 127.0405],
+].map(([k, ko, en, ja, zh, lat, lng]) => ({ k, ko, en, ja, zh, lat, lng }));
+
+const DISTRICTS = [
+  ['마포구', 'Mapo-gu', 37.5620, 126.9080], ['용산구', 'Yongsan-gu', 37.5320, 126.9800],
+  ['중구', 'Jung-gu', 37.5600, 126.9970], ['종로구', 'Jongno-gu', 37.5950, 126.9800],
+  ['성동구', 'Seongdong-gu', 37.5560, 127.0400], ['광진구', 'Gwangjin-gu', 37.5450, 127.0850],
+  ['강남구', 'Gangnam-gu', 37.4950, 127.0550], ['서초구', 'Seocho-gu', 37.4800, 127.0100],
+  ['송파구', 'Songpa-gu', 37.5000, 127.1150], ['영등포구', 'Yeongdeungpo-gu', 37.5180, 126.9050],
+  ['서대문구', 'Seodaemun-gu', 37.5790, 126.9370], ['동대문구', 'Dongdaemun-gu', 37.5830, 127.0450],
+  ['성북구', 'Seongbuk-gu', 37.6000, 127.0200], ['동작구', 'Dongjak-gu', 37.4980, 126.9450],
+  ['관악구', 'Gwanak-gu', 37.4750, 126.9450], ['강서구', 'Gangseo-gu', 37.5550, 126.8500],
+].map(([ko, en, lat, lng]) => ({ ko, en, lat, lng }));
+
+const GEO = {
+  han: [[127.22, 37.578], [127.17, 37.565], [127.14, 37.553], [127.115, 37.538], [127.10, 37.527], [127.085, 37.523], [127.07, 37.526], [127.055, 37.531], [127.04, 37.533], [127.025, 37.528], [127.01, 37.519], [126.995, 37.515], [126.98, 37.514], [126.965, 37.517], [126.95, 37.522], [126.935, 37.532], [126.92, 37.540], [126.905, 37.548], [126.89, 37.556], [126.875, 37.565], [126.855, 37.575], [126.835, 37.585], [126.81, 37.595], [126.78, 37.605], [126.74, 37.618]],
+  streams: [
+    [16, [[127.075, 37.66], [127.072, 37.60], [127.065, 37.575], [127.05, 37.555], [127.042, 37.541], [127.033, 37.531]]],
+    [7, [[126.978, 37.569], [127.0, 37.5692], [127.02, 37.5702], [127.035, 37.565], [127.042, 37.553]]],
+    [15, [[127.12, 37.44], [127.09, 37.50], [127.078, 37.524]]],
+    [14, [[126.86, 37.44], [126.88, 37.50], [126.889, 37.53], [126.885, 37.553]]],
+  ],
+  mountains: [[126.99, 37.665, 4600, 3300], [126.955, 37.445, 3300, 1700], [126.958, 37.583, 650, 900], [126.978, 37.595, 1100, 520], [127.103, 37.568, 900, 1500], [127.08, 37.468, 1300, 900], [127.012, 37.468, 1500, 900], [126.93, 37.61, 1200, 900]],
+  parks: [[126.988, 37.5505, 850, 560], [127.040, 37.5445, 520, 300], [127.121, 37.521, 700, 480], [127.081, 37.549, 460, 400], [126.982, 37.528, 750, 450], [126.885, 37.570, 650, 340], [126.928, 37.527, 520, 220]],
+  roads: [
+    [[126.966, 37.571], [126.977, 37.5705], [127.01, 37.5713], [127.03, 37.573], [127.05, 37.578]],
+    [[126.977, 37.585], [126.977, 37.565], [126.972, 37.556], [126.968, 37.540], [126.965, 37.517], [126.955, 37.495], [126.95, 37.47]],
+    [[127.022, 37.533], [127.0215, 37.52], [127.027, 37.498], [127.032, 37.47]],
+    [[127.027, 37.498], [127.045, 37.503], [127.065, 37.509], [127.09, 37.513]],
+    [[126.88, 37.535], [126.90, 37.527], [126.94, 37.512], [126.98, 37.506], [127.02, 37.512], [127.06, 37.516], [127.10, 37.518], [127.14, 37.532]],
+    [[126.84, 37.588], [126.88, 37.566], [126.91, 37.552], [126.94, 37.539], [126.97, 37.526], [127.0, 37.524], [127.03, 37.537], [127.06, 37.539], [127.09, 37.535], [127.13, 37.556]],
+    [[126.905, 37.546], [126.925, 37.556], [126.945, 37.557], [126.965, 37.56], [126.977, 37.565]],
+    [[127.03, 37.573], [127.037, 37.561], [127.047, 37.548], [127.056, 37.5445], [127.07, 37.54], [127.09, 37.545], [127.11, 37.55]],
+    [[127.0, 37.60], [127.003, 37.58], [127.0, 37.566], [126.995, 37.55], [126.994, 37.534], [127.0, 37.52], [127.02, 37.49]],
+  ],
+  line2: [[126.977, 37.565], [126.982, 37.566], [126.992, 37.566], [127.009, 37.565], [127.019, 37.566], [127.029, 37.564], [127.037, 37.561], [127.044, 37.556], [127.047, 37.547], [127.056, 37.5446], [127.070, 37.540], [127.086, 37.537], [127.094, 37.535], [127.104, 37.521], [127.100, 37.513], [127.086, 37.511], [127.074, 37.511], [127.063, 37.509], [127.049, 37.504], [127.036, 37.501], [127.0276, 37.4979], [127.014, 37.493], [127.007, 37.492], [126.997, 37.481], [126.9816, 37.4766], [126.963, 37.477], [126.952, 37.481], [126.942, 37.482], [126.9296, 37.4842], [126.913, 37.487], [126.901, 37.485], [126.896, 37.493], [126.8912, 37.5088], [126.895, 37.518], [126.8956, 37.5257], [126.902, 37.534], [126.9139, 37.5496], [126.9245, 37.5572], [126.9368, 37.5551], [126.946, 37.557], [126.956, 37.557], [126.964, 37.560]],
+};
+
+const CATS = ['restaurants', 'transport', 'shopping', 'attractions', 'waiting', 'local', 'safety', 'other'];
+const REWARDS = [500, 1000, 2000, 5000];
+const RADII = [500, 1000, 3000, 5000];
+const MIN_REWARDS = [0, 500, 1000, 2000];
+const FEE = 0.2;
+const LEVELS = [{ k: 'lv0', min: 0 }, { k: 'lv1', min: 3 }, { k: 'lv2', min: 10 }, { k: 'lv3', min: 25 }];
+
+// ===== Demo data (marked demo:true, shown with a 데모 badge) =====
+function seed() {
+  const now = Date.now(), M = 60000;
+  const db = { v: 1, users: [], questions: [], participants: [], messages: [], translations: [], wallets: [], transactions: [], subscriptions: [], notifications: [], platform: { fees: 0 }, seededAt: now };
+  const U = [['u1', '민준', 'ko', '#2563EB', '홍대 근처에 사는 대학생'], ['u2', 'Emma', 'en', '#0D9488', 'Traveler from London'], ['u3', '서연', 'ko', '#D97706', '성수동 카페 바리스타'], ['u4', 'Haruto', 'ja', '#7C3AED', '東京から来た旅行者'], ['u5', 'Li Na', 'zh', '#DB2777', '来自上海的游客']];
+  U.forEach(([id, name, lang, color, bio]) => {
+    db.users.push({ id, display_name: name, email: id + '@demo.localq', profile_image: null, preferred_language: lang, reputation_level: 'lv0', color, bio, created_at: now - 40 * 86400000, demo: true });
+    db.wallets.push({ id: 'w' + id, user_id: id, available_balance: 30000, reserved_balance: 0 });
+    db.transactions.push({ id: 'tt' + id, user_id: id, question_id: null, amount: 30000, transaction_type: 'topup', status: 'completed', created_at: now - 40 * 86400000 });
+  });
+  const W = id => db.wallets.find(w => w.user_id === id);
+  let tn = 0;
+  const tx = (user_id, question_id, amount, transaction_type, status, at) => db.transactions.push({ id: 'ts' + (tn++), user_id, question_id, amount, transaction_type, status, created_at: at });
+  const P = ko => PLACES.find(p => p.ko === ko);
+  let mn = 0;
+  const Q = (o) => {
+    const p = P(o.place), at = now - o.ago * M;
+    const q = { id: o.id, questioner_id: o.by, title: o.title, description: o.desc, image: null, category: o.cat, latitude: p.lat + (o.j || 0), longitude: p.lng + (o.k || 0), location_name: p.ko, location_name_en: p.en, address: '서울특별시 ' + p.addr, reward_amount: o.r, status: 'open', selected_answerer_id: null, created_at: at, completed_at: null, expires_at: at + 24 * 60 * M, lang: o.lang, tr: {}, demo: true };
+    Object.entries(o.tr || {}).forEach(([l, v]) => { q.tr[l] = { title: v[0], description: v[1], status: 'done' }; });
+    const w = W(o.by);
+    w.available_balance -= o.r;
+    (o.parts || []).forEach((a, i) => db.participants.push({ id: o.id + 'p' + i, question_id: o.id, answerer_id: a, joined_at: at + (i + 1) * 60000, status: 'active' }));
+    (o.msgs || []).forEach(([from, thread, text, ol, trs, mAgo, read]) => {
+      const id = 'ms' + (mn++);
+      const recipient = from === o.by ? thread : o.by;
+      db.messages.push({ id, question_id: o.id, thread, sender_id: from, recipient_id: recipient, original_text: text, original_language: ol, image: null, created_at: now - mAgo * M, read_at: read ? now - (mAgo - 1) * M : null });
+      Object.entries(trs || {}).forEach(([l, txt]) => db.translations.push({ id: 'tr' + id + l, message_id: id, target_language: l, translated_text: txt, translation_status: 'done', updated_at: now }));
+    });
+    if (o.status === 'completed') {
+      const fee = Math.round(o.r * FEE), pay = o.r - fee;
+      q.status = 'completed'; q.selected_answerer_id = o.sel; q.completed_at = now - o.doneAgo * M;
+      tx(o.by, o.id, -o.r, 'reserve', 'completed', at);
+      W(o.sel).available_balance += pay; db.platform.fees += fee;
+      tx(o.sel, o.id, pay, 'reward_earned', 'completed', q.completed_at);
+      tx('platform', o.id, fee, 'platform_fee', 'completed', q.completed_at);
+      db.participants.filter(x => x.question_id === o.id).forEach(x => { x.status = x.answerer_id === o.sel ? 'selected' : 'not_selected'; });
+    } else if (o.status === 'expired') {
+      q.status = 'expired'; q.expires_at = at + 6 * 60 * M; q.completed_at = q.expires_at;
+      w.available_balance += o.r;
+      tx(o.by, o.id, -o.r, 'reserve', 'refunded', at);
+      tx(o.by, o.id, o.r, 'refund', 'completed', q.expires_at);
+    } else {
+      w.reserved_balance += o.r;
+      tx(o.by, o.id, -o.r, 'reserve', 'pending', at);
+    }
+    db.questions.push(q);
+  };
+
+  Q({ id: 'qd1', by: 'u2', place: '연남동', lang: 'en', cat: 'waiting', r: 1000, ago: 12, j: .0006, k: -.0012,
+    title: 'How long is the waiting line at this restaurant?', desc: 'The ramen place near the Yeonnam-dong park entrance. Thinking of heading there in 20 minutes.',
+    tr: { ko: ['이 식당 지금 대기 줄 얼마나 긴가요?', '연남동 공원 입구 근처 라멘집이요. 20분 뒤에 가려고 해요.'] },
+    parts: ['u1', 'u4', 'u3'],
+    msgs: [
+      ['u1', 'u1', '지금 15팀 정도 기다리고 있어요.', 'ko', { en: 'There are about 15 groups waiting right now.' }, 9, true],
+      ['u2', 'u1', 'Thanks! How long do you think the wait is?', 'en', { ko: '고마워요! 대기 시간이 얼마나 될까요?' }, 8, true],
+      ['u1', 'u1', '40분 정도요. 테이블링 앱으로 원격 줄서기도 돼요.', 'ko', { en: 'About 40 minutes. You can also join the line remotely with the Tabling app.' }, 7, false],
+      ['u4', 'u4', '今、入口に10人くらい並んでいます。', 'ja', { en: 'About 10 people are lining up at the entrance now.' }, 6, false],
+      ['u3', 'u3', '방금 지나왔는데 줄이 꽤 길었어요.', 'ko', { en: 'I just walked past and the line was pretty long.' }, 4, false],
+    ] });
+  Q({ id: 'qd2', by: 'u5', place: '명동', lang: 'zh', cat: 'shopping', r: 500, ago: 4, j: -.0005,
+    title: '这家店今天营业吗？', desc: '明洞的那家化妆品店，地图上显示休息。',
+    tr: { ko: ['이 가게 오늘 영업하나요?', '명동에 있는 화장품 가게인데 지도에는 휴무로 나와요.'], en: ['Is this store open today?', 'The cosmetics shop in Myeongdong shows as closed on the map.'] } });
+  Q({ id: 'qd3', by: 'u2', place: '홍대입구역', lang: 'en', cat: 'transport', r: 500, ago: 2, j: -.0004, k: .0008,
+    title: 'Which subway exit has an elevator?', desc: 'Traveling with a big suitcase at Hongik Univ. Station.',
+    tr: { ko: ['엘리베이터 있는 출구가 몇 번인가요?', '홍대입구역인데 큰 캐리어를 들고 있어요.'] } });
+  Q({ id: 'qd4', by: 'u4', place: '경복궁', lang: 'ja', cat: 'attractions', r: 2000, ago: 190, status: 'completed', sel: 'u3', doneAgo: 160,
+    title: '今、景福宮は混んでいますか？', desc: '午後に韓服を着て行く予定です。',
+    tr: { ko: ['지금 경복궁 붐비나요?', '오후에 한복 입고 갈 예정이에요.'], en: ['Is Gyeongbokgung crowded right now?', 'Planning to go in hanbok this afternoon.'] },
+    parts: ['u3'],
+    msgs: [
+      ['u3', 'u3', '지금 단체 관광객이 많아요. 3시 이후가 한적해요.', 'ko', { ja: '今は団体観光客が多いです。3時以降は空いています。' }, 180, true],
+      ['u4', 'u3', 'ありがとうございます！3時に行きます。', 'ja', { ko: '감사합니다! 3시에 갈게요.' }, 170, true],
+    ] });
+  Q({ id: 'qd5', by: 'u2', place: '성수역', lang: 'en', cat: 'restaurants', r: 1000, ago: 25, j: .0012, k: -.002,
+    title: 'Is this cafe crowded right now?', desc: 'The big warehouse cafe near Seongsu Station exit 3.',
+    tr: { ko: ['이 카페 지금 사람 많나요?', '성수역 3번 출구 근처 창고형 카페요.'] },
+    parts: ['u3'],
+    msgs: [['u3', 'u3', '자리 거의 다 찼어요. 2층 창가만 몇 자리 남았어요.', 'ko', { en: "It's almost full. Only a few window seats are left on the 2nd floor." }, 20, false]] });
+  Q({ id: 'qd6', by: 'u5', place: '서울역', lang: 'zh', cat: 'transport', r: 1000, ago: 8,
+    title: '附近哪里可以买交通卡？', desc: '刚到首尔站。',
+    tr: { ko: ['근처에서 교통카드 어디서 사요?', '서울역에 막 도착했어요.'], en: ['Where can I buy a transportation card nearby?', 'Just arrived at Seoul Station.'] } });
+  Q({ id: 'qd7', by: 'u1', place: '강남역', lang: 'ko', cat: 'other', r: 500, ago: 40, j: .0008,
+    title: '강남역 11번 출구 지금 비 많이 오나요?', desc: '우산을 살지 고민 중이에요.',
+    tr: { en: ['Is it raining hard at Gangnam Station exit 11?', "I'm deciding whether to buy an umbrella."] } });
+  Q({ id: 'qd8', by: 'u4', place: '이태원역', lang: 'ja', cat: 'local', r: 2000, ago: 65, j: -.0009, k: -.002,
+    title: '梨泰院でおすすめの朝ごはんは？', desc: '9時ごろ食べたいです。',
+    tr: { ko: ['이태원에서 추천하는 아침 식사는?', '9시쯤 먹고 싶어요.'], en: ['Any breakfast recommendations in Itaewon?', "I'd like to eat around 9."] },
+    parts: ['u1'],
+    msgs: [['u1', 'u1', '해방촌 쪽 베이글집 추천해요. 9시에 열어요.', 'ko', { ja: '解放村のベーグル屋さんがおすすめです。9時に開きます。' }, 55, false]] });
+  Q({ id: 'qd9', by: 'u2', place: '남산서울타워', lang: 'en', cat: 'waiting', r: 5000, ago: 6,
+    title: 'Is the cable car line long?', desc: 'Want to catch the sunset from the tower.',
+    tr: { ko: ['케이블카 줄 길어요?', '타워에서 노을을 보고 싶어요.'] } });
+  Q({ id: 'qd10', by: 'u5', place: '롯데월드', lang: 'zh', cat: 'attractions', r: 2000, ago: 18,
+    title: '现在排队要多久？', desc: '想玩旋转木马。',
+    tr: { ko: ['지금 대기 얼마나 걸려요?', '회전목마 타고 싶어요.'], en: ['How long is the wait right now?', 'I want to ride the carousel.'] } });
+  Q({ id: 'qd11', by: 'u2', place: '광장시장', lang: 'en', cat: 'restaurants', r: 1000, ago: 30 * 60, status: 'expired',
+    title: 'Is the bindaetteok stall open?', desc: 'The famous mung bean pancake stall.',
+    tr: { ko: ['빈대떡 가게 열었나요?', '유명한 녹두 빈대떡 가게요.'] } });
+  Q({ id: 'qd12', by: 'u3', place: '더현대 서울', lang: 'ko', cat: 'waiting', r: 1000, ago: 15,
+    title: '더현대 지하 팝업 대기 몇 팀이에요?', desc: '지하 2층 캐릭터 팝업스토어요.',
+    tr: { en: ['How many groups are waiting at the Hyundai pop-up?', 'The character pop-up store on B2.'] } });
+  Q({ id: 'qd13', by: 'u4', place: '익선동', lang: 'ja', cat: 'safety', r: 1000, ago: 50,
+    title: 'この辺りは夜でも安全ですか？', desc: '夜11時ごろ一人で歩く予定です。',
+    tr: { ko: ['이 근처 밤에도 안전한가요?', '밤 11시쯤 혼자 걸을 예정이에요.'], en: ['Is this area safe at night?', "I'll be walking alone around 11pm."] } });
+
+  db.subscriptions.push({ id: 'sd1', user_id: 'u1', name_ko: '홍대', name_en: 'Hongdae', latitude: 37.5563, longitude: 126.9236, radius_meters: 1000, categories: [], minimum_reward: 0, notifications_enabled: true });
+  db.subscriptions.push({ id: 'sd2', user_id: 'u3', name_ko: '성수', name_en: 'Seongsu', latitude: 37.5445, longitude: 127.0560, radius_meters: 3000, categories: [], minimum_reward: 500, notifications_enabled: true });
+  db.subscriptions.push({ id: 'sd3', user_id: 'u1', name_ko: '명동', name_en: 'Myeongdong', latitude: 37.5636, longitude: 126.9850, radius_meters: 500, categories: ['shopping', 'restaurants'], minimum_reward: 1000, notifications_enabled: false });
+  const N = (user_id, question_id, type, params, ago, is_read) => db.notifications.push({ id: 'nd' + db.notifications.length, user_id, question_id, type, params, is_read, created_at: now - ago * M });
+  N('u1', 'qd3', 'new_question', {}, 2, false);
+  N('u1', 'qd1', 'message', { from: 'u2' }, 8, true);
+  N('u1', 'qd1', 'new_question', {}, 12, true);
+  N('u2', 'qd1', 'new_answer', { from: 'u3' }, 4, false);
+  N('u2', 'qd1', 'new_answer', { from: 'u4' }, 6, false);
+  N('u2', 'qd5', 'new_answer', { from: 'u3' }, 20, false);
+  N('u3', 'qd4', 'selected', { amount: 1600 }, 160, false);
+  N('u4', 'qd8', 'new_answer', { from: 'u1' }, 55, false);
+  N('u2', 'qd11', 'expired', { amount: 1000 }, 24 * 60, true);
+  return db;
+}
+// ===== utilities =====
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function haversine(a, b) { const R = 6371000, r = x => x * Math.PI / 180; const dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng); const s = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(s)); }
+const ss = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} } };
+function detectLang(text) { if (/[\uAC00-\uD7A3]/.test(text)) return 'ko'; if (/[\u3040-\u30FF]/.test(text)) return 'ja'; if (/[\u4E00-\u9FFF]/.test(text)) return 'zh'; return 'en'; }
+const fmtDist = m => m < 1000 ? Math.round(m / 10) * 10 + 'm' : (m / 1000).toFixed(m < 10000 ? 1 : 0) + 'km';
+
+const IC = {
+  map: '<path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"/><path d="M9 3v15M15 6v15"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', minus: '<path d="M5 12h14"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  bellPlus: '<path d="M15.5 3.3A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-1.2-.8-2.1-3.2"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0M19 3v6M16 6h6"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  locate: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  filter: '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>', back: '<path d="m15 18-6-6 6-6"/>', next: '<path d="m9 18 6-6-6-6"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  pin: '<path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  wallet: '<path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16" cy="14.5" r="1.2"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', edit: '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  translate: '<path d="M4 5h8M8 3v2M6 5c0 4 3 7 6 8M10 5c0 4-3 7-6 8"/><path d="m13 21 4-9 4 9M14.5 18h5"/>',
+  lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  award: '<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 8 5-3 5 3-1.5-8"/>',
+};
+const ic = (n, s = 20) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+
+// ===== i18n =====
+const LANGS = { ko: '한국어', en: 'English', ja: '日本語', zh: '简体中文' };
+const LANG_EN = { ko: 'Korean', en: 'English', ja: 'Japanese', zh: 'Simplified Chinese' };
+const LOCALE = { ko: 'ko-KR', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN' };
+function t(k, v) { let s = (I18N[lang()] || I18N.ko)[k]; if (s == null) s = I18N.ko[k] ?? k; if (v) s = s.replace(/\{(\w+)\}/g, (_, x) => v[x] ?? ''); return s; }
+
+// ===== state =====
+const S = { uid: ss.get('lq_uid') || 'u1', mode: ss.get('lq_mode') || 'answer', tab: 'map', preview: null, listOpen: false, sort: 'newest',
+  filters: { cats: [], showCompleted: true, minReward: 0 }, qSeg: null, pick: null, dropPin: null, draft: null, subEdit: null, room: null,
+  myLoc: null, search: '', searchOpen: false, createOpen: false, trAvail: 'unknown', composer: { text: '', image: null }, profTab: 'tx' };
+let DB = null;
+const KEY = 'localq-v1';
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) { const d = JSON.parse(raw); if (d && d.v === 1) DB = d; } } catch (e) {}
+  if (!DB) { DB = seed(); save(); }
+  if (!DB.users.find(u => u.id === S.uid)) S.uid = 'u1';
+  // keep sample questions fresh: shift seeded demo timestamps forward to "now" when the demo gets old
+  const delta = Date.now() - (DB.seededAt || Date.now());
+  if (delta > 3 * 3600000) {
+    const demoQ = new Set(DB.questions.filter(q => q.demo).map(q => q.id));
+    DB.questions.forEach(q => { if (q.demo) { q.created_at += delta; q.expires_at += delta; if (q.completed_at) q.completed_at += delta; } });
+    DB.messages.forEach(m => { if (demoQ.has(m.question_id) && m.id.startsWith('ms')) { m.created_at += delta; if (m.read_at) m.read_at += delta; } });
+    DB.participants.forEach(x => { if (demoQ.has(x.question_id) && x.id.startsWith('qd')) x.joined_at += delta; });
+    DB.notifications.forEach(n => { if (n.id.startsWith('nd')) n.created_at += delta; });
+    DB.transactions.forEach(x => { if (x.id.startsWith('ts')) x.created_at += delta; });
+    DB.seededAt = Date.now(); save();
+  }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) { toast(t('err_storage')); } }
+
+const userById = id => DB.users.find(u => u.id === id);
+const me = () => userById(S.uid);
+const lang = () => (DB && me()?.preferred_language) || 'ko';
+const wallet = id => DB.wallets.find(w => w.user_id === id);
+const qById = id => DB.questions.find(q => q.id === id);
+const partsOf = qid => DB.participants.filter(p => p.question_id === qid);
+const dispStatus = q => q.status === 'open' ? (partsOf(q.id).length ? 'active' : 'unanswered') : q.status;
+const placeName = q => lang() === 'ko' ? q.location_name : (q.location_name_en || q.location_name);
+const pName = p => lang() === 'ko' ? p.ko : p.en;
+const hoodName = h => h[lang()] || h.en;
+const nearest = (arr, ll) => arr.reduce((b, x) => { const d = haversine(ll, x); return d < b.d ? { x, d } : b; }, { x: null, d: Infinity });
+
+// ===== "server" layer — every read/write of private data goes through here =====
+function addTx(user_id, question_id, amount, transaction_type, status) { DB.transactions.push({ id: newId('t'), user_id, question_id, amount, transaction_type, status, created_at: Date.now() }); }
+function notify(user_id, question_id, type, params) { DB.notifications.push({ id: newId('n'), user_id, question_id, type, params: params || {}, is_read: false, created_at: Date.now() }); }
+function refund(q, status) {
+  const w = wallet(q.questioner_id), r = Math.min(w.reserved_balance, q.reward_amount);
+  w.reserved_balance -= r; w.available_balance += r; q.status = status; q.completed_at = Date.now();
+  const rtx = DB.transactions.find(x => x.question_id === q.id && x.transaction_type === 'reserve' && x.user_id === q.questioner_id); if (rtx) rtx.status = 'refunded';
+  addTx(q.questioner_id, q.id, r, 'refund', 'completed');
+  partsOf(q.id).forEach(p => { p.status = 'closed'; });
+}
+const API = {
+  createQuestion(d) {
+    const u = me(), w = wallet(u.id);
+    if (!d.loc || !d.title.trim() || !d.cat) throw new Error('invalid');
+    if (!(d.reward >= 100 && d.reward <= 100000)) throw new Error('reward');
+    if (w.available_balance < d.reward) throw new Error('balance');
+    const now = Date.now();
+    const q = { id: newId('q'), questioner_id: u.id, title: d.title.trim(), description: d.desc.trim(), image: d.image || null, category: d.cat, latitude: d.loc.lat, longitude: d.loc.lng, location_name: d.loc.name_ko, location_name_en: d.loc.name_en, address: d.loc.address, reward_amount: d.reward, status: 'open', selected_answerer_id: null, created_at: now, completed_at: null, expires_at: now + d.expiryH * 3600000, lang: detectLang(d.title + ' ' + d.desc), tr: {}, demo: false };
+    w.available_balance -= q.reward_amount; w.reserved_balance += q.reward_amount;
+    addTx(u.id, q.id, -q.reward_amount, 'reserve', 'pending');
+    DB.questions.push(q);
+    let n = 0;
+    DB.subscriptions.forEach(s => {
+      if (!s.notifications_enabled || s.user_id === u.id) return;
+      if (haversine({ lat: s.latitude, lng: s.longitude }, { lat: q.latitude, lng: q.longitude }) > s.radius_meters) return;
+      if (s.categories.length && !s.categories.includes(q.category)) return;
+      if (q.reward_amount < (s.minimum_reward || 0)) return;
+      if (DB.notifications.some(x => x.user_id === s.user_id && x.question_id === q.id)) return;
+      notify(s.user_id, q.id, 'new_question', {}); n++;
+    });
+    save(); return { q, notified: n };
+  },
+  join(qid) {
+    const q = qById(qid), u = me();
+    if (!q || q.status !== 'open') throw new Error('closed');
+    if (q.questioner_id === u.id) throw new Error('own');
+    if (!partsOf(qid).some(p => p.answerer_id === u.id)) { DB.participants.push({ id: newId('p'), question_id: qid, answerer_id: u.id, joined_at: Date.now(), status: 'active' }); save(); }
+  },
+  isParticipant: (qid, uid) => partsOf(qid).some(p => p.answerer_id === uid),
+  canAccessThread(q, viewer, thread) { return viewer === q.questioner_id ? API.isParticipant(q.id, thread) : (viewer === thread && API.isParticipant(q.id, viewer)); },
+  // Visibility rule: questioner sees every thread; an answerer sees only the thread that bears their own id.
+  messagesFor(qid, viewer, thread) {
+    const q = qById(qid); if (!q) return [];
+    if (viewer === q.questioner_id) return DB.messages.filter(m => m.question_id === qid && (!thread || m.thread === thread));
+    if (!API.isParticipant(qid, viewer)) return [];
+    return DB.messages.filter(m => m.question_id === qid && m.thread === viewer);
+  },
+  send(qid, thread, text, image) {
+    const q = qById(qid), u = me();
+    if (!q || !API.canAccessThread(q, u.id, thread)) throw new Error('forbidden');
+    if (q.status === 'expired' || q.status === 'cancelled') throw new Error('closed');
+    text = (text || '').trim(); if (!text && !image) return null;
+    const recipient = u.id === q.questioner_id ? thread : q.questioner_id;
+    const m = { id: newId('m'), question_id: qid, thread, sender_id: u.id, recipient_id: recipient, original_text: text, original_language: text ? detectLang(text) : lang(), image: image || null, created_at: Date.now(), read_at: null };
+    DB.messages.push(m);
+    const first = u.id !== q.questioner_id && DB.messages.filter(x => x.question_id === qid && x.sender_id === u.id).length === 1;
+    const ex = DB.notifications.find(n => n.user_id === recipient && n.question_id === qid && !n.is_read && (n.type === 'message' || n.type === 'new_answer') && n.params.from === u.id);
+    if (ex) { ex.created_at = Date.now(); ex.params.count = (ex.params.count || 1) + 1; } else notify(recipient, qid, first ? 'new_answer' : 'message', { from: u.id });
+    save();
+    if (text) queueMsgTranslation(m, userById(recipient).preferred_language);
+    return m;
+  },
+  markRead(qid, thread) {
+    const q = qById(qid); if (!q) return; const now = Date.now(); let ch = false;
+    API.messagesFor(qid, S.uid, thread).forEach(m => { if (m.recipient_id === S.uid && !m.read_at && (!thread || m.thread === thread)) { m.read_at = now; ch = true; } });
+    DB.notifications.forEach(n => { if (n.user_id === S.uid && n.question_id === qid && !n.is_read && (n.type === 'message' || n.type === 'new_answer') && (S.uid !== q.questioner_id || n.params.from === thread)) { n.is_read = true; ch = true; } });
+    if (ch) save();
+  },
+  select(qid, aid) {
+    const q = qById(qid);
+    if (!q || q.questioner_id !== S.uid) throw new Error('forbidden');
+    if (q.status !== 'open' || q.selected_answerer_id) throw new Error('already');
+    if (!DB.messages.some(m => m.question_id === qid && m.sender_id === aid)) throw new Error('noanswer');
+    const qw = wallet(q.questioner_id), aw = wallet(aid);
+    if (qw.reserved_balance < q.reward_amount) throw new Error('reserve');
+    const fee = Math.round(q.reward_amount * FEE), pay = q.reward_amount - fee;
+    qw.reserved_balance -= q.reward_amount; aw.available_balance += pay; DB.platform.fees += fee;
+    q.status = 'completed'; q.selected_answerer_id = aid; q.completed_at = Date.now();
+    const rtx = DB.transactions.find(x => x.question_id === qid && x.transaction_type === 'reserve' && x.user_id === q.questioner_id); if (rtx) rtx.status = 'completed';
+    addTx(aid, qid, pay, 'reward_earned', 'completed'); addTx('platform', qid, fee, 'platform_fee', 'completed');
+    partsOf(qid).forEach(p => { const sel = p.answerer_id === aid; p.status = sel ? 'selected' : 'not_selected'; notify(p.answerer_id, qid, sel ? 'selected' : 'closed', { amount: pay }); });
+    save(); return pay;
+  },
+  cancel(qid) {
+    const q = qById(qid);
+    if (!q || q.questioner_id !== S.uid || q.status !== 'open') throw new Error('forbidden');
+    partsOf(qid).forEach(p => notify(p.answerer_id, qid, 'closed', {}));
+    refund(q, 'cancelled'); save();
+  },
+  sweep() {
+    const now = Date.now(); let ch = false;
+    DB.questions.forEach(q => { if (q.status === 'open' && q.expires_at < now) { refund(q, 'expired'); notify(q.questioner_id, q.id, 'expired', { amount: q.reward_amount }); ch = true; } });
+    if (ch) save(); return ch;
+  },
+  topUp(n) { wallet(S.uid).available_balance += n; addTx(S.uid, null, n, 'topup', 'completed'); save(); },
+};
+
+// ===== translation (Claude via the page's sample capability) =====
+let samplePromise = null;
+function getSample() {
+  if (!samplePromise) samplePromise = (async () => { try { if (!window.claude || typeof window.claude.use !== 'function') return null; return await window.claude.use('sample'); } catch (e) { return null; } })();
+  return samplePromise;
+}
+const trQ = []; let trRun = 0;
+function runTr(job) { return new Promise((res, rej) => { trQ.push({ job, res, rej }); pump(); }); }
+function pump() { while (trRun < 2 && trQ.length) { const it = trQ.shift(); trRun++; it.job().then(it.res, it.rej).finally(() => { trRun--; pump(); }); } }
+async function translateObj(obj, target) {
+  const s = await getSample(); if (!s) throw { code: 'unavailable' };
+  const prompt = `You are the translation layer of LocalQ, a travel Q&A app used in Seoul. Translate every string value in the JSON object below into ${LANG_EN[target]}. Keep the keys unchanged. Keep the tone natural and casual, like a chat between a traveler and a local. Keep place names recognizable. If a value is already in ${LANG_EN[target]}, return it unchanged. Respond with only the JSON object.\n\n${JSON.stringify(obj)}`;
+  const out = await runTr(() => s.json(prompt, { modelTier: 'quick' }));
+  if (!out || typeof out !== 'object') throw { code: 'bad_output' };
+  return out;
+}
+const trFor = (mid, l) => DB.translations.find(x => x.message_id === mid && x.target_language === l);
+function trState(e) { if (!e) return null; if (e.translation_status === 'pending' && Date.now() - (e.updated_at || 0) > 90000) return 'failed'; return e.translation_status; }
+function queueMsgTranslation(m, target, force) {
+  if (!m.original_text || m.original_language === target) return;
+  let e = trFor(m.id, target); const st = trState(e);
+  if (!force && (st === 'done' || st === 'pending' || st === 'failed')) return;
+  if (S.trAvail === 'none') { if (!e) { e = { id: newId('x'), message_id: m.id, target_language: target, translated_text: null, translation_status: 'failed', updated_at: Date.now() }; DB.translations.push(e); save(); } return; }
+  if (!e) { e = { id: newId('x'), message_id: m.id, target_language: target, translated_text: null }; DB.translations.push(e); }
+  e.translation_status = 'pending'; e.updated_at = Date.now(); save();
+  translateObj({ text: m.original_text }, target).then(o => {
+    const cur = trFor(m.id, target) || e; cur.translated_text = String(o.text ?? ''); cur.translation_status = cur.translated_text ? 'done' : 'failed'; cur.updated_at = Date.now();
+  }).catch(err => { const cur = trFor(m.id, target) || e; cur.translation_status = 'failed'; cur.error = err && err.code; cur.updated_at = Date.now(); })
+    .finally(() => { save(); if (S.room) renderRoomBody(); });
+}
+function ensureQTr(q, force) {
+  const L = lang(); if (q.lang === L) return;
+  const e = q.tr[L]; if (!force && e && (e.status === 'done' || e.status === 'pending' && Date.now() - (e.at || 0) < 90000)) return;
+  if (S.trAvail === 'none') { q.tr[L] = { status: 'failed', at: Date.now() }; return; }
+  q.tr[L] = { status: 'pending', at: Date.now() };
+  translateObj({ title: q.title, description: q.description || '' }, L).then(o => { q.tr[L] = { title: o.title || q.title, description: o.description || '', status: 'done', at: Date.now() }; })
+    .catch(() => { q.tr[L] = { status: 'failed', at: Date.now() }; })
+    .finally(() => { save(); if (S.room && S.room.qid === q.id) renderRoom(); if (S.preview === q.id) renderPreview(); });
+}
+const qTr = q => { const L = lang(); return q.lang !== L && q.tr[L] && q.tr[L].status === 'done' ? q.tr[L] : null; };
+const qTitle = q => (qTr(q) || q).title;
+const qDesc = q => { const x = qTr(q); return x ? x.description : q.description; };
+
+// ===== time & formatting =====
+function ago(ts) { const m = Math.floor((Date.now() - ts) / 60000); if (m < 1) return t('just_now'); if (m < 60) return t('min_ago', { n: m }); const h = Math.floor(m / 60); if (h < 24) return t('hr_ago', { n: h }); return t('day_ago', { n: Math.floor(h / 24) }); }
+function left(ts) { const d = ts - Date.now(); if (d <= 0) return t('st_expired'); const m = Math.ceil(d / 60000); if (m < 60) return t('min_left', { n: m }); return t('hr_left', { n: Math.floor(m / 60) }); }
+const clock = ts => new Date(ts).toLocaleTimeString(LOCALE[lang()], { hour: 'numeric', minute: '2-digit' });
+const dateStr = ts => new Date(ts).toLocaleDateString(LOCALE[lang()], { month: 'short', day: 'numeric' }) + ' ' + clock(ts);
+function avatar(u, size = 36) {
+  if (!u) return '';
+  const st = `width:${size}px;height:${size}px;font-size:${Math.round(size * .42)}px`;
+  if (u.profile_image) return `<span class="av" style="${st}"><img src="${u.profile_image}" alt=""></span>`;
+  return `<span class="av" style="${st};background:${u.color}" aria-hidden="true">${esc(u.display_name.slice(0, 1))}</span>`;
+}
+const statusChip = q => { const s = dispStatus(q); return `<span class="st st-${s}">${t('st_' + s)}</span>`; };
+const demoChip = q => q.demo ? `<span class="demo-chip" title="${esc(t('demo_hint'))}">${t('demo')}</span>` : '';
+
+// ===== toast & sheets =====
+let toastTimer;
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2600); }
+let sheetResolve = null;
+function openSheet(html, cls = '') {
+  const root = $('#sheetRoot');
+  root.innerHTML = `<div class="scrim" data-act="closeSheet"></div><div class="sheet ${cls}" role="dialog" aria-modal="true">${html}</div>`;
+  root.hidden = false; const f = root.querySelector('.sheet button, .sheet input, .sheet select'); if (f) setTimeout(() => f.focus(), 30);
+}
+function closeSheet(v) { const root = $('#sheetRoot'); root.hidden = true; root.innerHTML = ''; if (sheetResolve) { const r = sheetResolve; sheetResolve = null; r(v); } }
+function confirmSheet({ title, body, ok, danger }) {
+  return new Promise(res => {
+    openSheet(`<h2 class="sh-title">${esc(title)}</h2><p class="sh-body">${body}</p><div class="sh-actions"><button class="btn ghost" data-act="closeSheet">${t('cancel')}</button><button class="btn ${danger ? 'danger' : 'primary'}" data-act="confirmOk">${esc(ok)}</button></div>`);
+    sheetResolve = res;
+  });
+}
+
+// ===== map =====
+const Mp = { s: 0.5, tx: 0, ty: 0, W: 0, H: 0, ptrs: new Map(), down: null, raf: 0, MIN: 0.12, MAX: 6 };
+function pathFrom(pts, close) { return pts.map((p, i) => { const w = proj(p[1], p[0]); return (i ? 'L' : 'M') + w.x.toFixed(0) + ' ' + w.y.toFixed(0); }).join(' ') + (close ? 'Z' : ''); }
+function buildBasemap() {
+  const el = (lat, lng, rx, ry, cls) => { const c = proj(lat, lng); return `<ellipse cx="${c.x.toFixed(0)}" cy="${c.y.toFixed(0)}" rx="${rx / 10}" ry="${ry / 10}" class="${cls}"/>`; };
+  let s = `<rect x="-3000" y="-3000" width="${WORLD.w + 6000}" height="${WORLD.h + 6000}" class="m-land"/>`;
+  GEO.mountains.forEach(([lng, lat, rx, ry]) => { s += el(lat, lng, rx, ry, 'm-mount'); });
+  GEO.parks.forEach(([lng, lat, rx, ry]) => { s += el(lat, lng, rx, ry, 'm-park'); });
+  s += `<path d="${pathFrom(GEO.han)}" class="m-water" stroke-width="95"/>`;
+  GEO.streams.forEach(([w, pts]) => { s += `<path d="${pathFrom(pts)}" class="m-water" stroke-width="${w}"/>`; });
+  GEO.roads.forEach(pts => { s += `<path d="${pathFrom(pts)}" class="m-road-c" vector-effect="non-scaling-stroke"/>`; });
+  GEO.roads.forEach(pts => { s += `<path d="${pathFrom(pts)}" class="m-road" vector-effect="non-scaling-stroke"/>`; });
+  s += `<path d="${pathFrom(GEO.line2, true)}" class="m-line2" vector-effect="non-scaling-stroke"/>`;
+  $('#world').innerHTML = s;
+}
+const toScreen = (lat, lng) => { const w = proj(lat, lng); return { x: w.x * Mp.s + Mp.tx, y: w.y * Mp.s + Mp.ty }; };
+const toLL = (x, y) => unproj((x - Mp.tx) / Mp.s, (y - Mp.ty) / Mp.s);
+const mapCenter = () => toLL(Mp.W / 2, Mp.H / 2);
+function centerOn(lat, lng, s) { if (s) Mp.s = clamp(s, Mp.MIN, Mp.MAX); const w = proj(lat, lng); Mp.tx = Mp.W / 2 - w.x * Mp.s; Mp.ty = Mp.H / 2 - w.y * Mp.s; applyView(); }
+function clampView() { const c = { x: (Mp.W / 2 - Mp.tx) / Mp.s, y: (Mp.H / 2 - Mp.ty) / Mp.s }; const cx = clamp(c.x, 0, WORLD.w), cy = clamp(c.y, 0, WORLD.h); Mp.tx += (c.x - cx) * Mp.s; Mp.ty += (c.y - cy) * Mp.s; }
+function applyView() { clampView(); $('#world').setAttribute('transform', `translate(${Mp.tx.toFixed(1)} ${Mp.ty.toFixed(1)}) scale(${Mp.s.toFixed(4)})`); scheduleOverlay(); }
+function zoomAt(px, py, f) { const ns = clamp(Mp.s * f, Mp.MIN, Mp.MAX), k = ns / Mp.s; Mp.tx = px - (px - Mp.tx) * k; Mp.ty = py - (py - Mp.ty) * k; Mp.s = ns; applyView(); }
+let flyRaf = 0;
+function flyTo(lat, lng, s) {
+  cancelAnimationFrame(flyRaf); const from = mapCenter(), s0 = Mp.s, s1 = clamp(s || Mp.s, Mp.MIN, Mp.MAX);
+  if (reduceMotion) return centerOn(lat, lng, s1);
+  const t0 = performance.now(), D = 450;
+  const step = now => { const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3); Mp.s = s0 + (s1 - s0) * e; centerOn(from.lat + (lat - from.lat) * e, from.lng + (lng - from.lng) * e); if (k < 1) flyRaf = requestAnimationFrame(step); };
+  flyRaf = requestAnimationFrame(step);
+}
+let lastHood = '';
+function scheduleOverlay() { if (Mp.raf) return; Mp.raf = requestAnimationFrame(() => { Mp.raf = 0; renderOverlay(); const h = nearest(HOODS, mapCenter()).x; if (h && h.k !== lastHood) { lastHood = h.k; renderHeader(); } if (S.listOpen || isWide()) scheduleList(); if (S.subEdit) renderSubCircleLabel(); }); }
+let listTimer; function scheduleList() { clearTimeout(listTimer); listTimer = setTimeout(renderList, 120); }
+const isWide = () => matchMedia('(min-width: 960px)').matches;
+
+function mapInit() {
+  const map = $('#map');
+  buildBasemap();
+  let first = true;
+  new ResizeObserver(() => {
+    const r = map.getBoundingClientRect(); if (!r.width) return;
+    const c = first ? null : mapCenter(); Mp.W = r.width; Mp.H = r.height;
+    if (first) { first = false; centerOn(37.5545, 126.962, isWide() ? 0.62 : 0.5); } else centerOn(c.lat, c.lng);
+  }).observe(map);
+  const local = e => { const r = map.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  map.addEventListener('pointerdown', e => {
+    if (e.button > 0) return; cancelAnimationFrame(flyRaf);
+    try { map.setPointerCapture(e.pointerId); } catch (_) {}
+    Mp.ptrs.set(e.pointerId, local(e));
+    if (Mp.ptrs.size === 1) Mp.down = { ...local(e), t: e.target, moved: false };
+    else if (Mp.down) Mp.down.moved = true;
+  });
+  map.addEventListener('pointermove', e => {
+    if (!Mp.ptrs.has(e.pointerId)) return;
+    const p = local(e), prev = Mp.ptrs.get(e.pointerId);
+    if (Mp.ptrs.size === 1) {
+      if (Mp.down && !Mp.down.moved && Math.hypot(p.x - Mp.down.x, p.y - Mp.down.y) > 6) Mp.down.moved = true;
+      if (Mp.down && Mp.down.moved) { Mp.tx += p.x - prev.x; Mp.ty += p.y - prev.y; applyView(); map.classList.add('dragging'); }
+      Mp.ptrs.set(e.pointerId, p);
+    } else if (Mp.ptrs.size === 2) {
+      const [a, b] = [...Mp.ptrs.values()]; const d0 = Math.hypot(a.x - b.x, a.y - b.y), m0 = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      Mp.ptrs.set(e.pointerId, p);
+      const [c, d] = [...Mp.ptrs.values()]; const d1 = Math.hypot(c.x - d.x, c.y - d.y), m1 = { x: (c.x + d.x) / 2, y: (c.y + d.y) / 2 };
+      Mp.tx += m1.x - m0.x; Mp.ty += m1.y - m0.y; if (d0 > 0) zoomAt(m1.x, m1.y, d1 / d0); else applyView();
+    }
+  });
+  const up = e => {
+    if (!Mp.ptrs.has(e.pointerId)) return;
+    const p = local(e); Mp.ptrs.delete(e.pointerId); map.classList.remove('dragging');
+    if (Mp.ptrs.size === 0 && Mp.down) { const d = Mp.down; Mp.down = null; if (!d.moved && e.type === 'pointerup') mapTap(d.t, p.x, p.y); }
+  };
+  map.addEventListener('pointerup', up); map.addEventListener('pointercancel', up);
+  map.addEventListener('wheel', e => { e.preventDefault(); const p = local(e); zoomAt(p.x, p.y, Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0016))); }, { passive: false });
+  map.addEventListener('dblclick', e => { const p = local(e); zoomAt(p.x, p.y, 2); });
+}
+function mapTap(target, x, y) {
+  const pin = target && target.closest && target.closest('[data-qid],[data-cluster]');
+  if (pin && pin.dataset.qid) return openPreview(pin.dataset.qid);
+  if (pin && pin.dataset.cluster) { const [lat, lng] = pin.dataset.cluster.split(',').map(Number); return flyTo(lat, lng, Mp.s * 2.4); }
+  if (target && target.closest && target.closest('[data-sub]')) return;
+  const ll = toLL(x, y);
+  if (S.subEdit) return;
+  if (S.pick === 'create') { S.draft.loc = locFromLL(ll); S.pick = null; location.hash = 'create'; return; }
+  if (S.mode === 'ask') { S.dropPin = locFromLL(ll); S.preview = null; renderMapChrome(); scheduleOverlay(); return; }
+  if (S.preview) { S.preview = null; renderMapChrome(); scheduleOverlay(); }
+}
+function locFromLL(ll) {
+  const n = nearest(PLACES, ll);
+  if (n.x && n.d < 350) return { lat: n.x.lat, lng: n.x.lng, name_ko: n.x.ko, name_en: n.x.en, address: '서울특별시 ' + n.x.addr };
+  const dist = nearest(DISTRICTS, ll).x, ref = n.x;
+  return { lat: +ll.lat.toFixed(5), lng: +ll.lng.toFixed(5), name_ko: `${ref.ko} 근처`, name_en: `Near ${ref.en}`, address: `서울특별시 ${dist.ko} (${ll.lat.toFixed(4)}, ${ll.lng.toFixed(4)})` };
+}
+const locName = l => lang() === 'ko' ? l.name_ko : l.name_en;
+
+function mapQuestions() {
+  const f = S.filters;
+  return DB.questions.filter(q => {
+    if (q.status === 'cancelled' || q.status === 'expired') return false;
+    if (q.status === 'completed' && !f.showCompleted) return false;
+    if (f.cats.length && !f.cats.includes(q.category)) return false;
+    if (q.reward_amount < f.minReward) return false;
+    return true;
+  });
+}
+function renderOverlay() {
+  if (!Mp.W) return;
+  const out = [], W = Mp.W, H = Mp.H, pad = 60, s = Mp.s;
+  const pos = (lat, lng) => { const p = toScreen(lat, lng); return p.x > -pad && p.x < W + pad && p.y > -pad && p.y < H + pad ? p : null; };
+  const tr = p => `transform:translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px)`;
+  if (s < 0.55) DISTRICTS.forEach(d => { const p = pos(d.lat, d.lng); if (p) out.push(`<span class="lbl lbl-d" style="${tr(p)}">${esc(lang() === 'ko' ? d.ko : d.en)}</span>`); });
+  if (s >= 0.55 && s < 2.2) HOODS.forEach(h => { const p = pos(h.lat, h.lng); if (p) out.push(`<span class="lbl lbl-h" style="${tr(p)}">${esc(hoodName(h))}</span>`); });
+  if (s >= 2.2) PLACES.forEach(pl => { const p = pos(pl.lat, pl.lng); if (p) out.push(`<span class="lbl lbl-p" style="${tr(p)}">${esc(pName(pl))}</span>`); });
+  // subscription areas of the current user (answer mode)
+  if (S.mode === 'answer' && !S.subEdit) DB.subscriptions.filter(x => x.user_id === S.uid && x.notifications_enabled).forEach(x => { const p = toScreen(x.latitude, x.longitude), r = x.radius_meters / 10 * s; if (p.x + r > 0 && p.x - r < W && p.y + r > 0 && p.y - r < H) out.push(`<span class="subzone" style="${tr(p)};width:${2 * r}px;height:${2 * r}px"></span>`); });
+  if (S.subEdit) { const r = S.subEdit.radius / 10 * s; out.push(`<span class="subzone editing" data-sub style="transform:translate(${W / 2}px,${H / 2}px);width:${2 * r}px;height:${2 * r}px"></span><span class="crosshair" style="transform:translate(${W / 2}px,${H / 2}px)"></span>`); }
+  if (S.myLoc) { const p = pos(S.myLoc.lat, S.myLoc.lng); if (p) out.push(`<span class="me-dot" style="${tr(p)}" aria-label="${esc(t('my_location'))}"></span>`); }
+  // markers, clustered when zoomed out
+  const qs = mapQuestions().map(q => ({ q, p: toScreen(q.latitude, q.longitude) })).filter(o => o.p.x > -pad && o.p.x < W + pad && o.p.y > -pad && o.p.y < H + pad);
+  const order = { unanswered: 3, active: 2, completed: 1 };
+  qs.sort((a, b) => (order[dispStatus(a.q)] - order[dispStatus(b.q)]) || a.p.y - b.p.y);
+  if (s < 0.42) {
+    const G = 62, cells = new Map();
+    qs.forEach(o => { const k = Math.floor(o.p.x / G) + ':' + Math.floor(o.p.y / G); if (!cells.has(k)) cells.set(k, []); cells.get(k).push(o); });
+    cells.forEach(arr => {
+      if (arr.length === 1) return out.push(pinHtml(arr[0].q, arr[0].p));
+      const x = arr.reduce((a, o) => a + o.p.x, 0) / arr.length, y = arr.reduce((a, o) => a + o.p.y, 0) / arr.length;
+      const lat = arr.reduce((a, o) => a + o.q.latitude, 0) / arr.length, lng = arr.reduce((a, o) => a + o.q.longitude, 0) / arr.length;
+      const open = arr.filter(o => dispStatus(o.q) === 'unanswered').length, max = Math.max(...arr.map(o => o.q.reward_amount));
+      out.push(`<button class="cluster${open ? ' has-open' : ''}" data-act="cluster" data-cluster="${lat},${lng}" style="transform:translate(${x.toFixed(1)}px,${y.toFixed(1)}px)" aria-label="${esc(t('cluster_label', { n: arr.length }))}"><b>${arr.length}</b><small>${t('up_to', { amt: won(max) })}</small></button>`);
+    });
+  } else qs.forEach(o => out.push(pinHtml(o.q, o.p)));
+  if (S.dropPin && S.mode === 'ask') { const p = pos(S.dropPin.lat, S.dropPin.lng); if (p) out.push(`<span class="drop-pin" style="${tr(p)}">${ic('pin', 34)}</span>`); }
+  $('#overlay').innerHTML = out.join('');
+}
+function pinHtml(q, p) {
+  const st = dispStatus(q), mine = q.questioner_id === S.uid, sel = S.preview === q.id, n = partsOf(q.id).length;
+  const cls = ['pin', 'pin-' + st, mine ? 'pin-mine' : '', sel ? 'pin-sel' : '', S.mode === 'ask' && !mine ? 'pin-dim' : ''].join(' ');
+  const label = `${qTitle(q)} ${won(q.reward_amount)} ${t('st_' + st)}`;
+  return `<button class="${cls}" data-qid="${q.id}" data-act="pin" style="transform:translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px)" aria-label="${esc(label)}"><span class="amt">${st === 'completed' ? ic('check', 12) : ''}${won(q.reward_amount)}</span>${st === 'active' ? `<span class="cnt">${n}</span>` : ''}</button>`;
+}
+
+function locate(after) {
+  if (!navigator.geolocation) { toast(t('loc_denied')); return; }
+  toast(t('loc_finding'));
+  navigator.geolocation.getCurrentPosition(p => {
+    const ll = { lat: p.coords.latitude, lng: p.coords.longitude };
+    if (!inSeoul(ll.lat, ll.lng)) { S.myLoc = null; toast(t('loc_outside')); return; }
+    S.myLoc = ll; flyTo(ll.lat, ll.lng, Math.max(Mp.s, 1.4)); if (after) after(ll);
+  }, () => toast(t('loc_denied')), { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 });
+}
+
+// ===== header & tabbar =====
+function renderHeader() {
+  const h = Mp.W ? nearest(HOODS, mapCenter()).x : HOODS[0];
+  $('#regionName').textContent = hoodName(h);
+  $('#regionBtn').setAttribute('aria-label', t('region_label', { name: hoodName(h) }));
+  $$('#modeSwitch button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode)); b.textContent = t(b.dataset.mode === 'ask' ? 'mode_ask' : 'mode_answer'); });
+  $('#modeSwitch').setAttribute('aria-label', t('mode_label'));
+  const sel = $('#langSel'); sel.value = lang(); sel.setAttribute('aria-label', t('language'));
+  $('#langCode').textContent = lang().toUpperCase();
+  document.documentElement.lang = lang();
+}
+function renderTabbar() {
+  const unread = DB.notifications.filter(n => n.user_id === S.uid && !n.is_read).length;
+  const items = [['map', 'map', 'tab_map'], ['questions', 'list', 'tab_questions'], ['create', 'plus', 'tab_create'], ['notifications', 'bell', 'tab_notifications'], ['profile', 'user', 'tab_profile']];
+  $('#tabbar').innerHTML = items.map(([k, i, l]) => k === 'create'
+    ? `<a href="#create" class="tab tab-create" aria-label="${esc(t(l))}"><span class="fab">${ic(i, 26)}</span><span class="tl">${t(l)}</span></a>`
+    : `<a href="#${k}" class="tab${S.tab === k && !S.room && !S.createOpen ? ' on' : ''}" ${S.tab === k ? 'aria-current="page"' : ''}>${ic(i, 22)}${k === 'notifications' && unread ? `<span class="badge">${unread > 9 ? '9+' : unread}</span>` : ''}<span class="tl">${t(l)}</span></a>`).join('');
+}
+
+// ===== map chrome (search, controls, preview, list) =====
+function renderMapChrome() {
+  $('#searchInput').placeholder = t('search_ph');
+  $('#searchInput').setAttribute('aria-label', t('search_ph'));
+  renderSearchResults();
+  const ctrls = [['locate', 'locate', 'ctl_locate'], ['zoomIn', 'plus', 'ctl_zoom_in'], ['zoomOut', 'minus', 'ctl_zoom_out'], ['filter', 'filter', 'ctl_filter'], ['subscribe', 'bellPlus', 'ctl_subscribe'], ['toggleList', S.listOpen ? 'map' : 'list', S.listOpen ? 'ctl_map' : 'ctl_list']];
+  const fcount = S.filters.cats.length + (S.filters.minReward ? 1 : 0) + (S.filters.showCompleted ? 0 : 1);
+  $('#mapCtrls').innerHTML = ctrls.map(([a, i, l]) => `<button class="ctl ctl-${a}" data-act="${a}" aria-label="${esc(t(l))}" title="${esc(t(l))}">${ic(i, 20)}${a === 'filter' && fcount ? `<span class="dot">${fcount}</span>` : ''}</button>`).join('');
+  $('#mapView').classList.toggle('list-open', S.listOpen);
+  // banner
+  let banner = '';
+  if (S.pick === 'create') banner = `<div class="banner">${ic('pin', 18)}<span>${t('pick_hint')}</span><button class="link" data-act="cancelPick">${t('cancel')}</button></div>`;
+  $('#mapBanner').innerHTML = banner;
+  renderPreview();
+  renderSubSheet();
+  if (S.listOpen || isWide()) renderList();
+}
+function renderPreview() {
+  const el = $('#preview');
+  if (S.subEdit || S.pick) { el.innerHTML = ''; return; }
+  if (S.preview) {
+    const q = qById(S.preview); if (!q) { S.preview = null; el.innerHTML = ''; return; }
+    const mine = q.questioner_id === S.uid, joined = API.isParticipant(q.id, S.uid), n = partsOf(q.id).length, open = q.status === 'open';
+    let actions = '';
+    if (mine) actions = `<button class="btn primary wide" data-act="openRoom" data-id="${q.id}">${ic('chat', 18)}${t('open_my_room')}</button>`;
+    else if (joined) actions = `<button class="btn primary wide" data-act="openRoom" data-id="${q.id}">${ic('chat', 18)}${t('continue_chat')}</button>`;
+    else if (open) actions = `<button class="btn ghost" data-act="openRoom" data-id="${q.id}">${t('view_question')}</button><button class="btn primary" data-act="answerNow" data-id="${q.id}">${t('answer_now')}</button>`;
+    else actions = `<button class="btn ghost wide" data-act="openRoom" data-id="${q.id}">${t('view_question')}</button>`;
+    el.innerHTML = `<article class="pv card" aria-label="${esc(t('preview_label'))}">
+      <button class="icon-btn pv-x" data-act="closePreview" aria-label="${esc(t('close'))}">${ic('x', 18)}</button>
+      <div class="pv-place">${ic('pin', 15)}<span>${esc(placeName(q))}</span><span class="cat">${t('cat_' + q.category)}</span>${demoChip(q)}</div>
+      <h3 class="pv-title">${esc(qTitle(q))}</h3>
+      ${qDesc(q) ? `<p class="pv-desc">${esc(qDesc(q))}</p>` : ''}
+      ${trNote(q)}
+      <div class="pv-meta"><span class="reward">${won(q.reward_amount)}</span><span>${ic('clock', 14)}${ago(q.created_at)}</span><span>${ic('users', 14)}${t('n_answerers', { n })}</span>${statusChip(q)}</div>
+      <div class="pv-actions">${actions}</div></article>`;
+    return;
+  }
+  if (S.mode === 'ask') {
+    if (S.dropPin) {
+      el.innerHTML = `<article class="pv card ask-card"><button class="icon-btn pv-x" data-act="clearDrop" aria-label="${esc(t('close'))}">${ic('x', 18)}</button>
+        <div class="pv-place">${ic('pin', 15)}<span>${t('selected_location')}</span></div>
+        <h3 class="pv-title">${esc(locName(S.dropPin))}</h3><p class="pv-addr">${esc(S.dropPin.address)}</p>
+        <div class="pv-actions"><button class="btn primary wide" data-act="askHere">${ic('plus', 18)}${t('ask_here')}</button></div></article>`;
+    } else {
+      el.innerHTML = `<div class="hint-card card"><p>${t('ask_hint')}</p><button class="btn primary" data-act="askBlank">${ic('plus', 18)}${t('ask_question')}</button></div>`;
+    }
+    return;
+  }
+  // answer mode summary chip
+  const vis = visibleQuestions().filter(q => dispStatus(q) === 'unanswered');
+  el.innerHTML = isWide() ? '' : `<button class="summary-chip" data-act="toggleList">${ic('list', 16)}<span>${vis.length ? t('n_unanswered_here', { n: vis.length }) : t('none_unanswered_here')}</span></button>`;
+}
+function trNote(q) {
+  if (q.lang === lang()) return '';
+  const e = q.tr[lang()];
+  if (e && e.status === 'done') return `<p class="tr-note">${ic('translate', 13)}${t('translated_from', { l: LANGS[q.lang] })}</p>`;
+  if (e && e.status === 'pending') return `<p class="tr-note">${ic('translate', 13)}${t('translating')}</p>`;
+  if (e && e.status === 'failed') return `<p class="tr-note warn">${ic('translate', 13)}${t('tr_failed_q')} <button class="link" data-act="retryQTr" data-id="${q.id}">${t('retry')}</button></p>`;
+  return `<p class="tr-note">${ic('translate', 13)}<button class="link" data-act="retryQTr" data-id="${q.id}">${t('translate_this')}</button></p>`;
+}
+function openPreview(qid) {
+  S.preview = qid; S.dropPin = null; const q = qById(qid);
+  ensureQTr(q);
+  renderMapChrome(); scheduleOverlay();
+  const p = toScreen(q.latitude, q.longitude);
+  if (p.y > Mp.H - 260 || p.y < 80 || p.x < 30 || p.x > Mp.W - 30) { const c = toLL(Mp.W / 2, Mp.H / 2 + Math.min(110, Mp.H * .18)); const w = proj(q.latitude, q.longitude), cw = proj(c.lat, c.lng), cc = mapCenter(), ccw = proj(cc.lat, cc.lng); const tgt = unproj(w.x + (ccw.x - cw.x), w.y + (ccw.y - cw.y)); flyTo(tgt.lat, tgt.lng); }
+}
+function visibleQuestions() {
+  if (!Mp.W) return [];
+  const a = toLL(0, 0), b = toLL(Mp.W, Mp.H);
+  return mapQuestions().filter(q => q.latitude <= a.lat && q.latitude >= b.lat && q.longitude >= a.lng && q.longitude <= b.lng);
+}
+function sortQs(list, sort, origin) {
+  const o = origin || (Mp.W ? mapCenter() : { lat: 37.5563, lng: 126.9236 });
+  const d = q => haversine(o, { lat: q.latitude, lng: q.longitude });
+  const by = { newest: (a, b) => b.created_at - a.created_at, reward: (a, b) => b.reward_amount - a.reward_amount || b.created_at - a.created_at, nearest: (a, b) => d(a) - d(b), unanswered: (a, b) => ((dispStatus(b) === 'unanswered') - (dispStatus(a) === 'unanswered')) || b.created_at - a.created_at };
+  return [...list].sort(by[sort] || by.newest);
+}
+function sortChips(cur, act) { return `<div class="chips" role="group" aria-label="${esc(t('sort'))}">${['newest', 'reward', 'nearest', 'unanswered'].map(k => `<button class="chip${cur === k ? ' on' : ''}" aria-pressed="${cur === k}" data-act="${act}" data-v="${k}">${t('sort_' + k)}</button>`).join('')}</div>`; }
+function qCard(q, opts = {}) {
+  const n = partsOf(q.id).length, d = opts.origin ? fmtDist(haversine(opts.origin, { lat: q.latitude, lng: q.longitude })) : '';
+  const unread = opts.unread ? `<span class="unread">${t('n_new', { n: opts.unread })}</span>` : '';
+  return `<button class="qcard" data-act="${opts.act || 'cardOpen'}" data-id="${q.id}">
+    <div class="qc-top"><span class="qc-place">${ic('pin', 14)}${esc(placeName(q))}${d ? `<span class="dist">${d}</span>` : ''}</span><span class="reward">${won(q.reward_amount)}</span></div>
+    <div class="qc-title">${esc(qTitle(q))}</div>
+    <div class="qc-meta"><span>${ago(q.created_at)}</span><span>${t('n_answerers', { n })}</span>${statusChip(q)}${opts.extra || ''}${unread}${demoChip(q)}</div></button>`;
+}
+function renderList() {
+  const el = $('#listPanel'); if (!el) return;
+  const list = sortQs(visibleQuestions(), S.sort), c = Mp.W ? mapCenter() : null;
+  el.innerHTML = `<div class="lp-head"><h2>${t('in_this_area', { n: list.length })}</h2>${sortChips(S.sort, 'sort')}</div>
+    <div class="lp-list">${list.length ? list.map(q => qCard(q, { origin: c })).join('') : `<div class="empty"><p>${t('empty_area')}</p><button class="btn ghost" data-act="askBlank">${t('ask_question')}</button></div>`}</div>`;
+}
+function renderSearchResults() {
+  const box = $('#searchResults'), q = S.search.trim().toLowerCase();
+  if (!S.searchOpen) { box.hidden = true; box.innerHTML = ''; return; }
+  let html;
+  if (!q) html = `<div class="sr-label">${t('popular_areas')}</div><div class="chips wrap">${HOODS.slice(0, 10).map(h => `<button class="chip" data-act="goHood" data-k="${h.k}">${esc(hoodName(h))}</button>`).join('')}</div>`;
+  else {
+    const hits = PLACES.filter(p => (p.ko + ' ' + p.en + ' ' + p.addr).toLowerCase().includes(q)).slice(0, 7);
+    const hh = HOODS.filter(h => [h.ko, h.en, h.ja, h.zh].join(' ').toLowerCase().includes(q)).slice(0, 3);
+    html = hits.length || hh.length ? hh.map(h => `<button class="sr" data-act="goHood" data-k="${h.k}">${ic('map', 16)}<span>${esc(hoodName(h))}</span></button>`).join('') + hits.map(p => `<button class="sr" data-act="goPlace" data-id="${p.id}">${ic('pin', 16)}<span>${esc(pName(p))}<small>${esc(p.addr)}</small></span></button>`).join('')
+      : `<p class="sr-empty">${t('search_none')}</p>`;
+  }
+  box.innerHTML = html; box.hidden = false;
+}
+
+// ===== filters =====
+function openFilters() {
+  S.fdraft = JSON.parse(JSON.stringify(S.filters));
+  renderFilterSheet();
+}
+function renderFilterSheet() {
+  const f = S.fdraft;
+  openSheet(`<h2 class="sh-title">${t('filters')}</h2>
+    <div class="field"><span class="fl">${t('category')}</span><div class="chips wrap">${CATS.map(c => `<button class="chip${f.cats.includes(c) ? ' on' : ''}" aria-pressed="${f.cats.includes(c)}" data-act="fCat" data-v="${c}">${t('cat_' + c)}</button>`).join('')}</div></div>
+    <div class="field"><span class="fl">${t('min_reward')}</span><div class="chips wrap">${MIN_REWARDS.map(r => `<button class="chip${f.minReward === r ? ' on' : ''}" aria-pressed="${f.minReward === r}" data-act="fMin" data-v="${r}">${r ? won(r) + '+' : t('any')}</button>`).join('')}</div></div>
+    <label class="switch-row"><span>${t('show_completed')}</span><input type="checkbox" class="switch" data-act="fDone" ${f.showCompleted ? 'checked' : ''}></label>
+    <div class="sh-actions"><button class="btn ghost" data-act="fReset">${t('reset')}</button><button class="btn primary" data-act="fApply">${t('apply')}</button></div>`);
+}
+
+// ===== region subscriptions =====
+function startSubEdit(sub) {
+  if (S.tab !== 'map') { location.hash = 'map'; }
+  S.preview = null; S.dropPin = null; S.listOpen = false;
+  S.subEdit = sub ? { id: sub.id, radius: sub.radius_meters, cats: [...sub.categories], min: sub.minimum_reward, enabled: sub.notifications_enabled } : { id: null, radius: 1000, cats: [], min: 0, enabled: true };
+  if (sub) setTimeout(() => flyTo(sub.latitude, sub.longitude, subZoom(sub.radius_meters)), 30);
+  else setTimeout(() => { Mp.s = Math.min(Mp.s, subZoom(1000)) < 0.3 ? subZoom(1000) : Mp.s; applyView(); }, 30);
+  renderMapChrome(); scheduleOverlay();
+}
+const subZoom = r => clamp((Math.min(Mp.W || 375, Mp.H || 600) * 0.32) / (r / 10), 0.12, 4);
+function renderSubSheet() {
+  const el = $('#subSheet');
+  if (!S.subEdit) { el.innerHTML = ''; el.hidden = true; return; }
+  const e = S.subEdit;
+  el.hidden = false;
+  el.innerHTML = `<div class="sub-card card" role="dialog" aria-label="${esc(t('sub_title'))}">
+    <div class="sub-head"><h2>${t(e.id ? 'sub_edit' : 'sub_title')}</h2><button class="icon-btn" data-act="subCancel" aria-label="${esc(t('close'))}">${ic('x', 18)}</button></div>
+    <p class="sub-where">${ic('pin', 15)}<span id="subWhere"></span></p>
+    <p class="sub-hint">${t('sub_hint')}</p>
+    <div class="field"><span class="fl">${t('radius')}</span><div class="chips">${RADII.map(r => `<button class="chip${e.radius === r ? ' on' : ''}" aria-pressed="${e.radius === r}" data-act="subRadius" data-v="${r}">${fmtDist(r)}</button>`).join('')}</div></div>
+    <div class="field"><span class="fl">${t('category')} <small>${t('cats_all_hint')}</small></span><div class="chips scroll">${CATS.map(c => `<button class="chip${e.cats.includes(c) ? ' on' : ''}" aria-pressed="${e.cats.includes(c)}" data-act="subCat" data-v="${c}">${t('cat_' + c)}</button>`).join('')}</div></div>
+    <div class="field"><span class="fl">${t('min_reward')}</span><div class="chips">${MIN_REWARDS.map(r => `<button class="chip${e.min === r ? ' on' : ''}" aria-pressed="${e.min === r}" data-act="subMin" data-v="${r}">${r ? won(r) + '+' : t('any')}</button>`).join('')}</div></div>
+    <button class="btn primary wide" data-act="subSave">${ic('bell', 18)}${t(e.id ? 'save_changes' : 'sub_save')}</button></div>`;
+  renderSubCircleLabel();
+}
+function renderSubCircleLabel() { const w = $('#subWhere'); if (!w || !Mp.W) return; const c = mapCenter(); const h = nearest(HOODS, c).x, p = nearest(PLACES, c); w.textContent = p.d < 400 ? pName(p.x) : hoodName(h); }
+
+// ===== pages =====
+function renderPage() {
+  const el = $('#pageView');
+  if (S.tab === 'questions') el.innerHTML = pageQuestions();
+  else if (S.tab === 'notifications') el.innerHTML = pageNotifications();
+  else if (S.tab === 'profile') el.innerHTML = pageProfile();
+  else el.innerHTML = '';
+}
+function unreadFor(q) { return API.messagesFor(q.id, S.uid).filter(m => m.recipient_id === S.uid && !m.read_at).length; }
+function pageQuestions() {
+  const seg = S.qSeg || (S.mode === 'ask' ? 'mine' : 'browse');
+  const segs = ['browse', 'mine', 'answered'];
+  let body = '';
+  if (seg === 'browse') {
+    const list = sortQs(mapQuestions().filter(q => q.status === 'open'), S.sort);
+    const c = Mp.W ? mapCenter() : null;
+    body = sortChips(S.sort, 'sort') + `<div class="cards">${list.map(q => qCard(q, { origin: c })).join('') || `<div class="empty"><p>${t('empty_browse')}</p></div>`}</div>`;
+  } else if (seg === 'mine') {
+    const list = DB.questions.filter(q => q.questioner_id === S.uid).sort((a, b) => b.created_at - a.created_at);
+    body = `<div class="cards">${list.map(q => qCard(q, { act: 'openRoom', unread: unreadFor(q), extra: q.status === 'open' ? `<span>${left(q.expires_at)}</span>` : '' })).join('') || `<div class="empty"><p>${t('empty_mine')}</p><a class="btn primary" href="#create">${t('ask_question')}</a></div>`}</div>`;
+  } else {
+    const list = DB.participants.filter(p => p.answerer_id === S.uid).map(p => qById(p.question_id)).filter(Boolean).sort((a, b) => b.created_at - a.created_at);
+    body = `<div class="cards">${list.map(q => qCard(q, { act: 'openRoom', unread: unreadFor(q), extra: q.selected_answerer_id === S.uid ? `<span class="st st-selected">${t('selected_badge')}</span>` : '' })).join('') || `<div class="empty"><p>${t('empty_answered')}</p><a class="btn primary" href="#map">${t('find_on_map')}</a></div>`}</div>`;
+  }
+  return `<div class="page"><h1 class="page-title">${t('tab_questions')}</h1>
+    <div class="seg" role="tablist">${segs.map(k => `<button role="tab" aria-selected="${seg === k}" class="${seg === k ? 'on' : ''}" data-act="qSeg" data-v="${k}">${t('seg_' + k)}</button>`).join('')}</div>${body}</div>`;
+}
+function notifText(n) {
+  const q = qById(n.question_id), from = n.params.from ? userById(n.params.from) : null;
+  const place = q ? placeName(q) : '';
+  const titles = { new_question: t('n_new_question', { place }), new_answer: t('n_new_answer', { name: from ? from.display_name : '' }), message: t('n_message', { name: from ? from.display_name : '' }), selected: t('n_selected', { amt: won(n.params.amount || 0) }), closed: t('n_closed'), expired: t('n_expired', { amt: won(n.params.amount || 0) }) };
+  return { title: titles[n.type] || n.type, body: q ? qTitle(q) : '' };
+}
+function pageNotifications() {
+  const subs = DB.subscriptions.filter(s => s.user_id === S.uid);
+  const list = DB.notifications.filter(n => n.user_id === S.uid).sort((a, b) => b.created_at - a.created_at);
+  const unread = list.filter(n => !n.is_read).length;
+  return `<div class="page"><div class="page-head"><h1 class="page-title">${t('tab_notifications')}</h1>${unread ? `<button class="link" data-act="readAll">${t('mark_all_read')}</button>` : ''}</div>
+    <section class="block"><div class="block-head"><h2>${t('sub_areas')}</h2><button class="btn small ghost" data-act="subNew">${ic('plus', 16)}${t('add_area')}</button></div>
+    ${subs.length ? subs.map(s => `<div class="sub-row card"><div class="sr-main"><b>${esc(lang() === 'ko' ? s.name_ko : s.name_en)}</b><span>${t('within', { d: fmtDist(s.radius_meters) })}</span><span>${s.categories.length ? s.categories.map(c => t('cat_' + c)).join(', ') : t('all_categories')}</span>${s.minimum_reward ? `<span>${won(s.minimum_reward)}+</span>` : ''}</div>
+      <div class="sr-actions"><input type="checkbox" class="switch" data-act="subToggle" data-id="${s.id}" ${s.notifications_enabled ? 'checked' : ''} aria-label="${esc(t('notifications_on'))}"><button class="icon-btn" data-act="subEditBtn" data-id="${s.id}" aria-label="${esc(t('edit'))}">${ic('edit', 17)}</button><button class="icon-btn" data-act="subDel" data-id="${s.id}" aria-label="${esc(t('delete'))}">${ic('trash', 17)}</button></div></div>`).join('') : `<p class="muted">${t('no_subs')}</p>`}
+    <p class="fine">${t('push_note')}</p></section>
+    <section class="block"><h2>${t('recent')}</h2>${list.length ? `<div class="nlist">${list.map(n => { const x = notifText(n); return `<button class="nrow${n.is_read ? '' : ' unread'}" data-act="openNotif" data-id="${n.id}"><span class="n-ic n-${n.type}">${ic({ new_question: 'pin', new_answer: 'chat', message: 'chat', selected: 'award', closed: 'lock', expired: 'clock' }[n.type] || 'bell', 18)}</span><span class="n-main"><b>${esc(x.title)}${n.params.count > 1 ? ` <small>×${n.params.count}</small>` : ''}</b><span>${esc(x.body)}</span></span><span class="n-time">${ago(n.created_at)}</span></button>`; }).join('')}</div>` : `<div class="empty"><p>${t('no_notifs')}</p></div>`}</section></div>`;
+}
+function statsOf(uid) {
+  const parts = DB.participants.filter(p => p.answerer_id === uid);
+  const answered = parts.filter(p => DB.messages.some(m => m.question_id === p.question_id && m.sender_id === uid));
+  const selected = DB.questions.filter(q => q.selected_answerer_id === uid).length;
+  const earned = DB.transactions.filter(x => x.user_id === uid && x.transaction_type === 'reward_earned').reduce((a, x) => a + x.amount, 0);
+  const pending = answered.map(p => qById(p.question_id)).filter(q => q && q.status === 'open').reduce((a, q) => a + q.reward_amount - Math.round(q.reward_amount * FEE), 0);
+  return { answers: answered.length, selected, rate: answered.length ? Math.round(selected / answered.length * 100) : 0, earned, pending, asked: DB.questions.filter(q => q.questioner_id === uid).length };
+}
+const levelOf = sel => LEVELS.reduce((L, l) => sel >= l.min ? l : L, LEVELS[0]);
+function pageProfile() {
+  const u = me(), w = wallet(u.id), st = statsOf(u.id), lv = levelOf(st.selected), li = LEVELS.indexOf(lv), nx = LEVELS[li + 1];
+  const prog = nx ? Math.round((st.selected - lv.min) / (nx.min - lv.min) * 100) : 100;
+  const txs = DB.transactions.filter(x => x.user_id === u.id).sort((a, b) => b.created_at - a.created_at);
+  const myQ = DB.questions.filter(q => q.questioner_id === u.id).sort((a, b) => b.created_at - a.created_at);
+  const myA = DB.participants.filter(p => p.answerer_id === u.id).map(p => qById(p.question_id)).filter(Boolean).sort((a, b) => b.created_at - a.created_at);
+  const tabs = ['tx', 'qh', 'ah'];
+  let hist = '';
+  if (S.profTab === 'tx') hist = txs.length ? `<div class="txlist">${txs.map(x => { const q = x.question_id ? qById(x.question_id) : null; return `<div class="txrow"><div><b>${t('tx_' + x.transaction_type)}</b><span>${q ? esc(qTitle(q)) : ''}</span><small>${dateStr(x.created_at)} <span class="txs txs-${x.status}">${t('txs_' + x.status)}</span></small></div><span class="amt ${x.amount >= 0 ? 'pos' : 'neg'}">${x.amount >= 0 ? '+' : '−'}${won(Math.abs(x.amount))}</span></div>`; }).join('')}</div>` : `<p class="muted">${t('no_tx')}</p>`;
+  else if (S.profTab === 'qh') hist = `<div class="cards">${myQ.map(q => qCard(q, { act: 'openRoom' })).join('') || `<p class="muted">${t('empty_mine')}</p>`}</div>`;
+  else hist = `<div class="cards">${myA.map(q => qCard(q, { act: 'openRoom', extra: q.selected_answerer_id === u.id ? `<span class="st st-selected">${t('selected_badge')}</span>` : '' })).join('') || `<p class="muted">${t('empty_answered')}</p>`}</div>`;
+  return `<div class="page"><h1 class="page-title">${t('tab_profile')}</h1>
+  <section class="prof card">
+    <label class="prof-av" title="${esc(t('change_photo'))}">${avatar(u, 64)}<input type="file" accept="image/*" data-act="avatarFile" hidden><span class="av-edit">${ic('image', 14)}</span></label>
+    <div class="prof-main"><div class="prof-name"><b>${esc(u.display_name)}</b><button class="icon-btn" data-act="editName" aria-label="${esc(t('edit_name'))}">${ic('edit', 16)}</button></div>
+      <span class="muted">${esc(u.bio || u.email)}</span>
+      <span class="level lv-${li}">${ic('award', 14)}${t(lv.k)}</span></div>
+  </section>
+  <div class="lang-row card"><span>${ic('globe', 18)}${t('pref_language')}</span><select data-act="langSelect" aria-label="${esc(t('pref_language'))}">${Object.entries(LANGS).map(([k, v]) => `<option value="${k}" ${k === lang() ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+  <section class="stats">
+    <div class="stat"><b>${st.answers}</b><span>${t('stat_answers')}</span></div>
+    <div class="stat"><b>${st.selected}</b><span>${t('stat_selected')}</span></div>
+    <div class="stat"><b>${st.rate}%</b><span>${t('stat_rate')}</span></div>
+    <div class="stat"><b class="rw">${won(st.earned)}</b><span>${t('stat_earned')}</span></div>
+  </section>
+  <section class="block"><h2>${t('reputation')}</h2><div class="rep card"><div class="rep-bar"><span style="width:${prog}%"></span></div><p>${nx ? t('rep_next', { n: nx.min - st.selected, lv: t(nx.k) }) : t('rep_max')}</p><ol class="rep-steps">${LEVELS.map((l, i) => `<li class="${i <= li ? 'done' : ''}"><b>${t(l.k)}</b><span>${t('rep_need', { n: l.min })}</span></li>`).join('')}</ol></div></section>
+  <section class="block"><h2>${t('wallet')}</h2><div class="wallet card">
+    <div class="wl-main"><span>${t('available')}</span><b>${won(w.available_balance)}</b></div>
+    <div class="wl-grid"><div><span>${t('reserved')}</span><b>${won(w.reserved_balance)}</b></div><div><span>${t('pending_rewards')}</span><b>${won(st.pending)}</b></div></div>
+    <p class="fine">${t('wallet_note')}</p>
+    <button class="btn ghost small" data-act="topUp">${ic('plus', 16)}${t('top_up', { amt: won(10000) })}</button></div></section>
+  <section class="block"><div class="seg" role="tablist">${tabs.map(k => `<button role="tab" aria-selected="${S.profTab === k}" class="${S.profTab === k ? 'on' : ''}" data-act="profTab" data-v="${k}">${t('ph_' + k)}</button>`).join('')}</div>${hist}</section>
+  <section class="block"><h2>${t('demo_accounts')}</h2><p class="fine">${t('demo_accounts_hint')}</p><div class="personas">${DB.users.map(x => `<button class="persona${x.id === u.id ? ' on' : ''}" data-act="switchUser" data-id="${x.id}" aria-pressed="${x.id === u.id}">${avatar(x, 40)}<span><b>${esc(x.display_name)}</b><small>${LANGS[x.preferred_language]}</small></span>${x.id === u.id ? `<span class="now">${t('current')}</span>` : ''}</button>`).join('')}</div>
+    <button class="btn ghost small danger-text" data-act="resetDemo">${t('reset_demo')}</button></section>
+  </div>`;
+}
+
+// ===== create flow =====
+const newDraft = () => ({ step: 1, loc: null, title: '', desc: '', cat: null, image: null, reward: 1000, custom: '', expiryH: 24 });
+function renderCreate() {
+  const root = $('#createRoot');
+  if (!S.createOpen) { root.hidden = true; root.innerHTML = ''; return; }
+  const d = S.draft, w = wallet(S.uid);
+  const steps = [t('step_loc'), t('step_write'), t('step_reward'), t('step_publish')];
+  let body = '', foot = '';
+  if (d.step === 1) {
+    body = `<h2 class="cr-h">${t('cr_where')}</h2>
+      ${d.loc ? `<div class="loc-card card">${ic('pin', 18)}<div><b>${esc(locName(d.loc))}</b><span>${esc(d.loc.address)}</span></div></div>` : `<p class="muted">${t('cr_no_loc')}</p>`}
+      <div class="search inline">${ic('search', 18)}<input id="crSearch" type="search" placeholder="${esc(t('search_ph'))}" value="${esc(S.crSearch || '')}" data-bind="crSearch" autocomplete="off"></div>
+      <div id="crResults" class="cr-results">${crResults()}</div>
+      <div class="row2"><button class="btn ghost" data-act="crPickMap">${ic('map', 18)}${t('pick_on_map')}</button><button class="btn ghost" data-act="crUseLoc">${ic('locate', 18)}${t('use_my_location')}</button></div>`;
+    foot = `<button class="btn primary wide" data-act="crNext" ${d.loc ? '' : 'disabled'}>${t('next')}</button>`;
+  } else if (d.step === 2) {
+    body = `<div class="loc-mini">${ic('pin', 15)}${esc(locName(d.loc))}<button class="link" data-act="crStep" data-v="1">${t('change')}</button></div>
+      <label class="field"><span class="fl">${t('q_title')}</span><input type="text" maxlength="80" data-bind="title" value="${esc(d.title)}" placeholder="${esc(t('q_title_ph'))}"></label>
+      <label class="field"><span class="fl">${t('q_desc')} <small>${t('optional')}</small></span><textarea rows="3" maxlength="500" data-bind="desc" placeholder="${esc(t('q_desc_ph'))}">${esc(d.desc)}</textarea></label>
+      <div class="field"><span class="fl">${t('photo')} <small>${t('optional')}</small></span>${d.image ? `<div class="img-prev"><img src="${d.image}" alt=""><button class="icon-btn" data-act="crImgDel" aria-label="${esc(t('delete'))}">${ic('x', 16)}</button></div>` : `<label class="btn ghost small file-btn">${ic('image', 16)}${t('add_photo')}<input type="file" accept="image/*" data-act="crImg" hidden></label>`}</div>
+      <div class="field"><span class="fl">${t('category')}</span><div class="chips wrap">${CATS.map(c => `<button class="chip${d.cat === c ? ' on' : ''}" aria-pressed="${d.cat === c}" data-act="crCat" data-v="${c}">${t('cat_' + c)}</button>`).join('')}</div></div>`;
+    foot = `<button class="btn ghost" data-act="crStep" data-v="1">${t('back')}</button><button class="btn primary" data-act="crNext">${t('next')}</button>`;
+  } else if (d.step === 3) {
+    const r = d.reward, fee = Math.round(r * FEE);
+    body = `<h2 class="cr-h">${t('cr_reward_h')}</h2>
+      <div class="reward-grid">${REWARDS.map(x => `<button class="rw-opt${r === x && !d.custom ? ' on' : ''}" aria-pressed="${r === x && !d.custom}" data-act="crReward" data-v="${x}">${won(x)}</button>`).join('')}</div>
+      <label class="field"><span class="fl">${t('custom_amount')}</span><div class="won-input"><span>₩</span><input type="number" inputmode="numeric" min="100" max="100000" step="100" data-bind="custom" value="${esc(d.custom)}" placeholder="3000"></div></label>
+      <div class="fee card"><div><span>${t('answerer_gets')}</span><b>${won(r - fee)}</b></div><div><span>${t('platform_fee')}</span><b>${won(fee)}</b></div><div><span>${t('available')}</span><b class="${w.available_balance < r ? 'neg' : ''}">${won(w.available_balance)}</b></div></div>
+      <div class="field"><span class="fl">${t('expires_in')}</span><div class="chips">${[1, 3, 24].map(h => `<button class="chip${d.expiryH === h ? ' on' : ''}" aria-pressed="${d.expiryH === h}" data-act="crExpiry" data-v="${h}">${t('hours', { n: h })}</button>`).join('')}</div></div>
+      <p class="fine">${t('reward_note')}</p>`;
+    foot = `<button class="btn ghost" data-act="crStep" data-v="2">${t('back')}</button><button class="btn primary" data-act="crNext">${t('next')}</button>`;
+  } else {
+    body = `<h2 class="cr-h">${t('cr_review')}</h2><div class="review card">
+      <div class="pv-place">${ic('pin', 15)}<span>${esc(locName(d.loc))}</span><span class="cat">${t('cat_' + d.cat)}</span></div>
+      <h3 class="pv-title">${esc(d.title)}</h3>${d.desc ? `<p class="pv-desc full">${esc(d.desc)}</p>` : ''}${d.image ? `<img class="rv-img" src="${d.image}" alt="">` : ''}
+      <div class="pv-meta"><span class="reward">${won(d.reward)}</span><span>${ic('clock', 14)}${t('hours', { n: d.expiryH })}</span></div></div>
+      <p class="fine">${t('publish_note', { amt: won(d.reward) })}</p>`;
+    foot = `<button class="btn ghost" data-act="crStep" data-v="3">${t('back')}</button><button class="btn primary" data-act="crPublish">${t('publish')}</button>`;
+  }
+  root.hidden = false;
+  root.innerHTML = `<div class="full" role="dialog" aria-modal="true" aria-label="${esc(t('ask_question'))}">
+    <header class="full-head"><button class="icon-btn" data-act="crClose" aria-label="${esc(t('close'))}">${ic('x', 20)}</button><h1>${t('ask_question')}</h1><span class="cr-count">${d.step}/4</span></header>
+    <ol class="steps">${steps.map((s, i) => `<li class="${i + 1 === d.step ? 'on' : i + 1 < d.step ? 'done' : ''}"><span>${i + 1}</span>${esc(s)}</li>`).join('')}</ol>
+    <div class="full-body">${body}</div><footer class="full-foot">${foot}</footer></div>`;
+}
+function crResults() {
+  const q = (S.crSearch || '').trim().toLowerCase();
+  const list = q ? PLACES.filter(p => (p.ko + ' ' + p.en + ' ' + p.addr).toLowerCase().includes(q)).slice(0, 6) : PLACES.filter(p => ['연남동', '명동', '성수역', '강남역', '경복궁', '이태원역'].includes(p.ko));
+  if (!list.length) return `<p class="sr-empty">${t('search_none')}</p>`;
+  return list.map(p => `<button class="sr" data-act="crPlace" data-id="${p.id}">${ic('pin', 16)}<span>${esc(pName(p))}<small>${esc(p.addr)}</small></span></button>`).join('');
+}
+function crValidate(step) {
+  const d = S.draft;
+  if (step === 1 && !d.loc) return t('v_loc');
+  if (step === 2) { if (d.title.trim().length < 4) return t('v_title'); if (!d.cat) return t('v_cat'); }
+  if (step === 3) { if (!(d.reward >= 100 && d.reward <= 100000)) return t('v_reward'); if (wallet(S.uid).available_balance < d.reward) return t('v_balance'); }
+  return null;
+}
+
+// ===== question room =====
+function openRoomState(qid) {
+  const q = qById(qid);
+  if (!S.room || S.room.qid !== qid) S.room = { qid, thread: q.questioner_id === S.uid ? null : S.uid, seg: 'people' };
+  if (q.questioner_id !== S.uid) S.room.thread = S.uid;
+  else if (S.pendingThread && API.isParticipant(qid, S.pendingThread)) S.room.thread = S.pendingThread;
+  S.pendingThread = null;
+  S.composer = { text: '', image: null };
+  ensureQTr(q);
+}
+function renderRoom() {
+  const root = $('#roomRoot');
+  if (!S.room) { root.hidden = true; root.innerHTML = ''; return; }
+  const q = qById(S.room.qid); if (!q) { S.room = null; root.hidden = true; return; }
+  const isQ = q.questioner_id === S.uid, th = S.room.thread, other = isQ ? (th ? userById(th) : null) : userById(q.questioner_id);
+  const joined = API.isParticipant(q.id, S.uid);
+  let title = isQ && th ? other.display_name : (isQ ? t('room_title') : other.display_name);
+  let headAct = '';
+  if (isQ && th && q.status === 'open' && DB.messages.some(m => m.question_id === q.id && m.sender_id === th)) headAct = `<button class="btn small amber" data-act="selectAns" data-id="${th}">${ic('award', 16)}${t('select_answer')}</button>`;
+  const showComposer = (isQ && th) || (!isQ && joined);
+  const canSend = showComposer && (q.status === 'open' || q.status === 'completed');
+  root.hidden = false;
+  root.innerHTML = `<div class="full room" role="dialog" aria-modal="true" aria-label="${esc(qTitle(q))}">
+    <header class="full-head"><button class="icon-btn" data-act="roomBack" aria-label="${esc(t('back'))}">${ic('back', 22)}</button>
+      <div class="rh-title">${isQ && th ? avatar(other, 30) : (!isQ ? avatar(other, 30) : '')}<div><h1>${esc(title)}</h1><span>${esc(placeName(q))}</span></div></div>${headAct}</header>
+    <div class="room-body" id="roomBody"></div>
+    ${showComposer ? `<footer class="composer${canSend ? '' : ' off'}">
+      <div id="cmpPrev"></div>
+      <div class="cmp-row"><label class="icon-btn" aria-label="${esc(t('add_photo'))}" title="${esc(t('add_photo'))}">${ic('image', 20)}<input type="file" accept="image/*" data-act="cmpImg" hidden ${canSend ? '' : 'disabled'}></label>
+      <textarea id="cmpText" rows="1" placeholder="${esc(canSend ? t('msg_ph') : t('room_closed'))}" ${canSend ? '' : 'disabled'} aria-label="${esc(t('msg_ph'))}"></textarea>
+      <button class="send" data-act="send" aria-label="${esc(t('send'))}" ${canSend ? '' : 'disabled'}>${ic('send', 18)}</button></div>
+      <p class="cmp-note" id="cmpNote"></p></footer>` : ''}</div>`;
+  const ta = $('#cmpText'); if (ta) { ta.value = S.composer.text; autoGrow(ta); }
+  renderComposerPreview();
+  renderRoomBody(true);
+}
+function autoGrow(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; }
+function renderComposerPreview() {
+  const p = $('#cmpPrev'); if (p) p.innerHTML = S.composer.image ? `<div class="img-prev small"><img src="${S.composer.image}" alt=""><button class="icon-btn" data-act="cmpImgDel" aria-label="${esc(t('delete'))}">${ic('x', 14)}</button></div>` : '';
+  const n = $('#cmpNote'); if (!n || !S.room) return;
+  const q = qById(S.room.qid), rid = q.questioner_id === S.uid ? S.room.thread : q.questioner_id, r = rid && userById(rid);
+  if (!r) { n.textContent = ''; return; }
+  if (r.preferred_language === lang()) n.innerHTML = '';
+  else if (S.trAvail === 'none') n.innerHTML = `${ic('translate', 13)}${esc(t('cmp_no_tr', { name: r.display_name }))}`;
+  else n.innerHTML = `${ic('translate', 13)}${esc(t('cmp_tr', { name: r.display_name, l: LANGS[r.preferred_language] }))}`;
+}
+function questionBlock(q, isQ) {
+  const n = partsOf(q.id).length;
+  return `<article class="qblock card">
+    <div class="pv-place">${ic('pin', 15)}<span>${esc(placeName(q))}</span><span class="cat">${t('cat_' + q.category)}</span>${demoChip(q)}</div>
+    <h2 class="pv-title">${esc(qTitle(q))}</h2>${qDesc(q) ? `<p class="pv-desc full">${esc(qDesc(q))}</p>` : ''}${trNote(q)}
+    ${q.image ? `<img class="rv-img" src="${q.image}" alt="">` : ''}
+    <div class="pv-meta"><span class="reward">${won(q.reward_amount)}</span><span>${ic('clock', 14)}${ago(q.created_at)}</span><span>${ic('users', 14)}${t('n_answerers', { n })}</span>${statusChip(q)}${q.status === 'open' ? `<span>${left(q.expires_at)}</span>` : ''}</div>
+    ${!isQ ? `<p class="by">${avatar(userById(q.questioner_id), 20)}${esc(t('asked_by', { name: userById(q.questioner_id).display_name }))}</p>` : ''}
+    ${isQ && q.status === 'open' ? `<button class="link danger-text" data-act="cancelQ">${t('cancel_question')}</button>` : ''}</article>`;
+}
+function statusBanner(q) {
+  const isQ = q.questioner_id === S.uid;
+  if (q.status === 'completed') {
+    const sel = userById(q.selected_answerer_id), pay = q.reward_amount - Math.round(q.reward_amount * FEE);
+    if (isQ) return `<div class="sbanner ok">${ic('award', 18)}${esc(t('b_done_q', { name: sel.display_name, amt: won(pay) }))}</div>`;
+    if (q.selected_answerer_id === S.uid) return `<div class="sbanner ok">${ic('award', 18)}${esc(t('b_done_me', { amt: won(pay) }))}</div>`;
+    return `<div class="sbanner">${ic('lock', 18)}${esc(t('b_done_other'))}</div>`;
+  }
+  if (q.status === 'expired') return `<div class="sbanner">${ic('clock', 18)}${esc(t(isQ ? 'b_expired_q' : 'b_expired'))}</div>`;
+  if (q.status === 'cancelled') return `<div class="sbanner">${ic('lock', 18)}${esc(t(isQ ? 'b_cancel_q' : 'b_cancel'))}</div>`;
+  return '';
+}
+function renderRoomBody(scroll) {
+  const body = $('#roomBody'); if (!body || !S.room) return;
+  const q = qById(S.room.qid), isQ = q.questioner_id === S.uid, th = S.room.thread;
+  const atBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
+  let html = statusBanner(q);
+  if (isQ && !th) {
+    const parts = partsOf(q.id);
+    html += questionBlock(q, true);
+    html += `<div class="seg" role="tablist"><button role="tab" aria-selected="${S.room.seg === 'people'}" class="${S.room.seg === 'people' ? 'on' : ''}" data-act="roomSeg" data-v="people">${t('by_answerer')} ${parts.length}</button><button role="tab" aria-selected="${S.room.seg === 'all'}" class="${S.room.seg === 'all' ? 'on' : ''}" data-act="roomSeg" data-v="all">${t('all_messages')}</button></div>`;
+    if (!parts.length) html += `<div class="empty"><p>${t('no_answerers_yet')}</p></div>`;
+    else if (S.room.seg === 'people') {
+      html += `<div class="threads">${parts.map(p => {
+        const u = userById(p.answerer_id), ms = API.messagesFor(q.id, S.uid, p.answerer_id), last = ms[ms.length - 1], un = ms.filter(m => m.recipient_id === S.uid && !m.read_at).length;
+        return `<button class="thread" data-act="openThread" data-id="${u.id}">${avatar(u, 44)}<span class="th-main"><b>${esc(u.display_name)}${p.status === 'selected' ? ` <span class="st st-selected">${t('selected_badge')}</span>` : ''}</b><span>${last ? esc(last.original_text ? msgText(last).text : t('photo')) : t('joined_no_msg')}</span></span><span class="th-side"><small>${last ? ago(last.created_at) : ago(p.joined_at)}</small>${un ? `<span class="badge">${un}</span>` : ''}</span></button>`;
+      }).join('')}</div><p class="fine center">${ic('lock', 13)}${t('privacy_q')}</p>`;
+    } else {
+      const ms = API.messagesFor(q.id, S.uid).sort((a, b) => a.created_at - b.created_at);
+      queueMine(ms);
+      html += `<div class="msgs">${ms.map(m => bubble(m, true)).join('') || `<p class="muted center">${t('no_messages')}</p>`}</div>`;
+    }
+  } else if (isQ && th) {
+    html += `<details class="qmini"><summary>${esc(qTitle(q))} <span class="reward">${won(q.reward_amount)}</span></summary>${questionBlock(q, true)}</details>`;
+    const ms = API.messagesFor(q.id, S.uid, th);
+    API.markRead(q.id, th); queueMine(ms);
+    html += `<div class="msgs">${ms.map(m => bubble(m)).join('') || `<p class="muted center">${t('no_messages')}</p>`}</div>`;
+  } else {
+    html += questionBlock(q, false);
+    if (!API.isParticipant(q.id, S.uid)) {
+      html += q.status === 'open' ? `<div class="join card"><p>${t('join_hint')}</p><button class="btn primary wide" data-act="join">${ic('chat', 18)}${t('answer_this')}</button><p class="fine">${ic('lock', 13)}${t('privacy_a')}</p></div>` : '';
+    } else {
+      const ms = API.messagesFor(q.id, S.uid, S.uid);
+      API.markRead(q.id, S.uid); queueMine(ms);
+      html += `<p class="fine center">${ic('lock', 13)}${t('privacy_a')}</p><div class="msgs">${ms.map(m => bubble(m)).join('') || `<p class="muted center">${t('first_answer_hint')}</p>`}</div>`;
+    }
+  }
+  body.innerHTML = html;
+  if (scroll || atBottom) body.scrollTop = body.scrollHeight;
+  renderTabbar();
+}
+function queueMine(ms) { ms.forEach(m => { if (m.recipient_id === S.uid) queueMsgTranslation(m, lang()); }); }
+function msgText(m) {
+  if (m.sender_id === S.uid || !m.original_text || m.original_language === lang()) return { text: m.original_text, state: 'orig' };
+  const e = trFor(m.id, lang()), st = trState(e);
+  if (st === 'done') return { text: e.translated_text, state: 'done' };
+  return { text: m.original_text, state: st || 'pending' };
+}
+function bubble(m, labelled) {
+  const mine = m.sender_id === S.uid, u = userById(m.sender_id), x = msgText(m), showOrig = S.showOrig && S.showOrig[m.id];
+  let note = '';
+  if (!mine && m.original_text && m.original_language !== lang()) {
+    if (x.state === 'done') note = `<button class="tr-toggle" data-act="toggleOrig" data-id="${m.id}">${ic('translate', 12)}${showOrig ? t('show_translation') : t('see_original', { l: LANGS[m.original_language] })}</button>`;
+    else if (x.state === 'pending') note = `<span class="tr-toggle">${ic('translate', 12)}${t('translating')}</span>`;
+    else note = `<span class="tr-toggle warn">${ic('translate', 12)}${t('tr_failed')} <button class="link" data-act="retryTr" data-id="${m.id}">${t('retry')}</button></span>`;
+  }
+  const text = showOrig ? m.original_text : x.text;
+  const read = mine && m.read_at ? `<span class="read">${t('read')}</span>` : '';
+  return `<div class="msg ${mine ? 'me' : 'them'}">${!mine ? avatar(u, 28) : ''}<div class="mcol">
+    ${labelled && !mine ? `<span class="who">${esc(u.display_name)}</span>` : ''}${labelled && mine ? `<span class="who">${esc(t('to_name', { name: userById(m.recipient_id).display_name }))}</span>` : ''}
+    <div class="bub">${m.image ? `<img src="${m.image}" alt="${esc(t('photo'))}">` : ''}${text ? `<p>${esc(text)}</p>` : ''}</div>
+    <div class="mmeta">${read}<span>${clock(m.created_at)}</span>${note}</div></div></div>`;
+}
+
+// ===== render all =====
+function rerenderAll() {
+  renderHeader(); renderTabbar();
+  const onMap = S.tab === 'map';
+  $('#mapView').hidden = !onMap; $('#pageView').hidden = onMap;
+  $('#app').classList.toggle('mode-ask', S.mode === 'ask');
+  if (onMap) { renderMapChrome(); scheduleOverlay(); } else renderPage();
+  renderCreate(); renderRoom();
+}
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1)) || 'map';
+  closeSheet();
+  if (h.startsWith('q-')) {
+    const qid = h.slice(2);
+    if (!qById(qid)) { location.replace('#map'); return; }
+    S.createOpen = false; openRoomState(qid);
+  } else {
+    S.room = null;
+    if (h !== 'map' && h !== 'create') S.pick = null;
+    if (h === 'create') { if (!S.draft) S.draft = newDraft(); S.createOpen = true; }
+    else { S.createOpen = false; if (['map', 'questions', 'notifications', 'profile'].includes(h)) S.tab = h; }
+  }
+  rerenderAll();
+}
+
+// ===== events =====
+async function onAct(act, el, e) {
+  const id = el.dataset.id, v = el.dataset.v;
+  switch (act) {
+    case 'pin': if (e.detail === 0) openPreview(el.dataset.qid); break;
+    case 'closeSheet': closeSheet(false); break;
+    case 'confirmOk': closeSheet(true); break;
+    case 'setMode': setMode(el.dataset.mode); break;
+    case 'regionSearch': if (S.tab !== 'map') location.hash = 'map'; setTimeout(() => $('#searchInput').focus(), 50); break;
+    case 'locate': locate(); break;
+    case 'zoomIn': zoomAt(Mp.W / 2, Mp.H / 2, 1.6); break;
+    case 'zoomOut': zoomAt(Mp.W / 2, Mp.H / 2, 1 / 1.6); break;
+    case 'filter': openFilters(); break;
+    case 'subscribe': startSubEdit(null); break;
+    case 'toggleList': S.listOpen = !S.listOpen; S.preview = null; renderMapChrome(); break;
+    case 'closePreview': S.preview = null; renderMapChrome(); scheduleOverlay(); break;
+    case 'clearDrop': S.dropPin = null; renderMapChrome(); scheduleOverlay(); break;
+    case 'askHere': S.draft = newDraft(); S.draft.loc = S.dropPin; S.draft.step = 2; S.dropPin = null; location.hash = 'create'; break;
+    case 'askBlank': S.draft = newDraft(); location.hash = 'create'; break;
+    case 'answerNow': try { API.join(id); goRoom(id); setTimeout(() => $('#cmpText') && $('#cmpText').focus(), 80); } catch (err) { toast(t('err_' + err.message)); } break;
+    case 'openRoom': case 'cardOpen': goRoom(id); break;
+    case 'cluster': if (e.detail === 0) { const [la, ln] = el.dataset.cluster.split(',').map(Number); flyTo(la, ln, Mp.s * 2.4); } break;
+    case 'sort': S.sort = v; if (S.tab === 'map') renderList(); else renderPage(); break;
+    case 'goHood': { const h = HOODS.find(x => x.k === el.dataset.k); S.searchOpen = false; S.search = ''; $('#searchInput').value = ''; $('#searchInput').blur(); renderSearchResults(); flyTo(h.lat, h.lng, Math.max(Mp.s, 1.2)); break; }
+    case 'goPlace': { const p = PLACES.find(x => x.id === id); S.searchOpen = false; S.search = ''; $('#searchInput').value = ''; $('#searchInput').blur(); renderSearchResults(); flyTo(p.lat, p.lng, Math.max(Mp.s, 2)); if (S.mode === 'ask') { S.dropPin = locFromLL(p); S.preview = null; renderMapChrome(); } break; }
+    case 'cancelPick': S.pick = null; location.hash = 'create'; break;
+    // filters
+    case 'fCat': { const c = S.fdraft.cats; const i = c.indexOf(v); i < 0 ? c.push(v) : c.splice(i, 1); renderFilterSheet(); break; }
+    case 'fMin': S.fdraft.minReward = +v; renderFilterSheet(); break;
+    case 'fDone': S.fdraft.showCompleted = el.checked; break;
+    case 'fReset': S.fdraft = { cats: [], showCompleted: true, minReward: 0 }; renderFilterSheet(); break;
+    case 'fApply': S.filters = S.fdraft; closeSheet(); renderMapChrome(); scheduleOverlay(); if (S.tab !== 'map') renderPage(); break;
+    // subscriptions
+    case 'subRadius': S.subEdit.radius = +v; flyTo(mapCenter().lat, mapCenter().lng, subZoom(+v)); renderSubSheet(); break;
+    case 'subCat': { const c = S.subEdit.cats; const i = c.indexOf(v); i < 0 ? c.push(v) : c.splice(i, 1); renderSubSheet(); break; }
+    case 'subMin': S.subEdit.min = +v; renderSubSheet(); break;
+    case 'subCancel': S.subEdit = null; renderMapChrome(); scheduleOverlay(); break;
+    case 'subSave': {
+      const c = mapCenter(), e2 = S.subEdit, h = nearest(HOODS, c), p = nearest(PLACES, c);
+      const nk = p.d < 400 ? p.x.ko : h.x.ko, ne = p.d < 400 ? p.x.en : h.x.en;
+      const rec = { user_id: S.uid, name_ko: nk, name_en: ne, latitude: +c.lat.toFixed(5), longitude: +c.lng.toFixed(5), radius_meters: e2.radius, categories: e2.cats, minimum_reward: e2.min, notifications_enabled: true };
+      if (e2.id) Object.assign(DB.subscriptions.find(x => x.id === e2.id), rec); else DB.subscriptions.push({ id: newId('s'), ...rec });
+      save(); S.subEdit = null; toast(t('sub_saved', { name: lang() === 'ko' ? nk : ne })); renderMapChrome(); scheduleOverlay(); break;
+    }
+    case 'subNew': startSubEdit(null); break;
+    case 'subEditBtn': startSubEdit(DB.subscriptions.find(x => x.id === id)); break;
+    case 'subToggle': { const s = DB.subscriptions.find(x => x.id === id); if (s && s.user_id === S.uid) { s.notifications_enabled = el.checked; save(); } break; }
+    case 'subDel': { const s = DB.subscriptions.find(x => x.id === id); if (await confirmSheet({ title: t('del_sub_q'), body: esc(lang() === 'ko' ? s.name_ko : s.name_en), ok: t('delete'), danger: true })) { DB.subscriptions = DB.subscriptions.filter(x => x.id !== id); save(); renderPage(); } break; }
+    // pages
+    case 'qSeg': S.qSeg = v; renderPage(); break;
+    case 'readAll': DB.notifications.forEach(n => { if (n.user_id === S.uid) n.is_read = true; }); save(); renderPage(); renderTabbar(); break;
+    case 'openNotif': { const n = DB.notifications.find(x => x.id === id); if (n) { n.is_read = true; save(); if (n.question_id && qById(n.question_id)) { if (n.type === 'new_question') { const q = qById(n.question_id); location.hash = 'map'; setTimeout(() => { flyTo(q.latitude, q.longitude, Math.max(Mp.s, 1.4)); openPreview(q.id); }, 60); } else { S.room = null; goRoom(n.question_id, n.params.from); } } else renderPage(); } break; }
+    case 'profTab': S.profTab = v; renderPage(); break;
+    case 'topUp': API.topUp(10000); toast(t('topped_up', { amt: won(10000) })); renderPage(); break;
+    case 'switchUser': S.uid = id; ss.set('lq_uid', id); S.room = null; S.preview = null; S.dropPin = null; S.qSeg = null; toast(t('switched', { name: me().display_name })); rerenderAll(); break;
+    case 'resetDemo': if (await confirmSheet({ title: t('reset_demo'), body: esc(t('reset_demo_q')), ok: t('reset'), danger: true })) { DB = seed(); save(); S.uid = 'u1'; ss.set('lq_uid', 'u1'); S.draft = null; rerenderAll(); toast(t('reset_done')); } break;
+    case 'editName': {
+      const u = me();
+      openSheet(`<h2 class="sh-title">${t('edit_name')}</h2><input class="text-in" id="nameIn" maxlength="24" value="${esc(u.display_name)}"><div class="sh-actions"><button class="btn ghost" data-act="closeSheet">${t('cancel')}</button><button class="btn primary" data-act="saveName">${t('save_changes')}</button></div>`);
+      break;
+    }
+    case 'saveName': { const v2 = $('#nameIn').value.trim(); if (v2) { me().display_name = v2; save(); } closeSheet(); renderPage(); break; }
+    // create
+    case 'crClose': S.pick = null; location.hash = S.tab; break;
+    case 'crStep': S.draft.step = +v; renderCreate(); break;
+    case 'crNext': { const err = crValidate(S.draft.step); if (err) { toast(err); break; } S.draft.step++; renderCreate(); break; }
+    case 'crPlace': { const p = PLACES.find(x => x.id === id); S.draft.loc = locFromLL(p); S.crSearch = ''; renderCreate(); break; }
+    case 'crPickMap': S.pick = 'create'; S.mode === 'ask' || setMode('ask', true); location.hash = 'map'; break;
+    case 'crUseLoc': locate(ll => { S.draft.loc = locFromLL(ll); if (S.createOpen) renderCreate(); }); break;
+    case 'crCat': S.draft.cat = v; renderCreate(); break;
+    case 'crReward': S.draft.reward = +v; S.draft.custom = ''; renderCreate(); break;
+    case 'crExpiry': S.draft.expiryH = +v; renderCreate(); break;
+    case 'crImgDel': S.draft.image = null; renderCreate(); break;
+    case 'crPublish': {
+      const d = S.draft;
+      for (const s of [1, 2, 3]) { const err = crValidate(s); if (err) { d.step = s; renderCreate(); toast(err); return; } }
+      try {
+        const { q, notified } = API.createQuestion(d);
+        S.draft = null; S.createOpen = false; if (S.mode !== 'ask') setMode('ask', true);
+        toast(notified ? t('published_n', { n: notified }) : t('published'));
+        goRoom(q.id);
+      } catch (err) { toast(t('err_' + err.message)); }
+      break;
+    }
+    // room
+    case 'roomBack': if (S.room && S.room.thread && qById(S.room.qid).questioner_id === S.uid) { S.room.thread = null; S.composer = { text: '', image: null }; renderRoom(); } else { S.room = null; location.hash = S.tab; } break;
+    case 'roomSeg': S.room.seg = v; renderRoomBody(); break;
+    case 'openThread': S.room.thread = id; S.composer = { text: '', image: null }; renderRoom(); break;
+    case 'join': try { API.join(S.room.qid); renderRoom(); setTimeout(() => $('#cmpText') && $('#cmpText').focus(), 40); } catch (err) { toast(t('err_' + err.message)); } break;
+    case 'send': sendMsg(); break;
+    case 'cmpImgDel': S.composer.image = null; renderComposerPreview(); break;
+    case 'toggleOrig': S.showOrig = S.showOrig || {}; S.showOrig[id] = !S.showOrig[id]; renderRoomBody(); break;
+    case 'retryTr': { const m = DB.messages.find(x => x.id === id); if (m) { if (S.trAvail === 'none') toast(t('tr_unavailable')); else queueMsgTranslation(m, lang(), true); renderRoomBody(); } break; }
+    case 'retryQTr': { const q = qById(id); if (S.trAvail === 'none') { toast(t('tr_unavailable')); break; } ensureQTr(q, true); if (S.room) renderRoom(); else renderPreview(); break; }
+    case 'selectAns': {
+      const q = qById(S.room.qid), u = userById(id), fee = Math.round(q.reward_amount * FEE);
+      if (await confirmSheet({ title: t('select_q', { name: u.display_name }), body: esc(t('select_body', { amt: won(q.reward_amount), pay: won(q.reward_amount - fee), fee: won(fee) })), ok: t('select_answer') })) {
+        try { const pay = API.select(q.id, id); toast(t('selected_toast', { name: u.display_name, amt: won(pay) })); renderRoom(); } catch (err) { toast(t('err_' + err.message)); }
+      }
+      break;
+    }
+    case 'cancelQ': {
+      const q = qById(S.room.qid);
+      if (await confirmSheet({ title: t('cancel_question'), body: esc(t('cancel_body', { amt: won(q.reward_amount) })), ok: t('cancel_question'), danger: true })) { try { API.cancel(q.id); toast(t('refunded', { amt: won(q.reward_amount) })); renderRoom(); } catch (err) { toast(t('err_' + err.message)); } }
+      break;
+    }
+  }
+}
+function goRoom(qid, thread) { S.preview = null; S.pendingThread = thread || null; if (location.hash === '#q-' + qid) route(); else location.hash = 'q-' + qid; }
+function setMode(m, quiet) { S.mode = m; ss.set('lq_mode', m); S.preview = null; S.dropPin = null; if (!quiet) toast(t(m === 'ask' ? 'mode_ask_toast' : 'mode_answer_toast')); renderHeader(); if (S.tab === 'map') { renderMapChrome(); scheduleOverlay(); } else renderPage(); $('#app').classList.toggle('mode-ask', m === 'ask'); }
+function sendMsg() {
+  const ta = $('#cmpText'); if (!ta || !S.room) return;
+  const q = qById(S.room.qid), text = ta.value;
+  if (!text.trim() && !S.composer.image) return;
+  try {
+    API.send(q.id, S.room.thread, text, S.composer.image);
+    S.composer = { text: '', image: null }; ta.value = ''; autoGrow(ta); renderComposerPreview(); renderRoomBody(true); ta.focus();
+  } catch (err) { toast(t('err_' + err.message)); }
+}
+
+function bindEvents() {
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]'); if (!el) return;
+    const act = el.dataset.act;
+    if (el.tagName === 'INPUT' && (el.type === 'checkbox' || el.type === 'file')) { if (el.type === 'checkbox') onAct(act, el, e); return; }
+    if (el.tagName === 'SELECT') return;
+    e.preventDefault(); onAct(act, el, e);
+  });
+  document.addEventListener('change', async e => {
+    const el = e.target, act = el.dataset.act;
+    if (act === 'langSelect' || el.id === 'langSel') { me().preferred_language = el.value; save(); rerenderAll(); return; }
+    if (el.type === 'file' && el.files && el.files[0]) {
+      try {
+        if (act === 'avatarFile') { me().profile_image = await readImage(el.files[0], 200); save(); renderPage(); }
+        if (act === 'crImg') { S.draft.image = await readImage(el.files[0], 720); renderCreate(); }
+        if (act === 'cmpImg') { S.composer.image = await readImage(el.files[0], 720); renderComposerPreview(); }
+      } catch (err) { toast(t('err_image')); }
+      el.value = '';
+    }
+  });
+  document.addEventListener('input', e => {
+    const el = e.target, b = el.dataset.bind;
+    if (el.id === 'searchInput') { S.search = el.value; S.searchOpen = true; renderSearchResults(); return; }
+    if (el.id === 'cmpText') { S.composer.text = el.value; autoGrow(el); return; }
+    if (!b) return;
+    if (b === 'crSearch') { S.crSearch = el.value; $('#crResults').innerHTML = crResults(); return; }
+    if (b === 'custom') { S.draft.custom = el.value; const n = parseInt(el.value, 10); if (n > 0) S.draft.reward = n; $$('.rw-opt').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); updateFee(); return; }
+    S.draft[b] = el.value;
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.id === 'cmpText' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMsg(); }
+    if (e.key === 'Escape') { if (!$('#sheetRoot').hidden) closeSheet(false); else if (S.searchOpen) { S.searchOpen = false; renderSearchResults(); } else if (S.preview) { S.preview = null; renderMapChrome(); scheduleOverlay(); } }
+  });
+  $('#searchInput').addEventListener('focus', () => { S.searchOpen = true; renderSearchResults(); });
+  $('#searchInput').addEventListener('blur', () => setTimeout(() => { if (!document.activeElement || !document.activeElement.closest('#searchWrap')) { S.searchOpen = false; renderSearchResults(); } }, 150));
+  $('#searchResults').addEventListener('pointerdown', e => e.preventDefault());
+  $('#searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') { const b = $('#searchResults .sr'); if (b) b.click(); } });
+  window.addEventListener('hashchange', route);
+  window.addEventListener('storage', e => {
+    if (e.key !== KEY || !e.newValue) return;
+    try { const d = JSON.parse(e.newValue); if (d && d.v === 1) { DB = d; refreshLive(); } } catch (_) {}
+  });
+  matchMedia('(min-width: 960px)').addEventListener('change', () => { if (S.tab === 'map') renderMapChrome(); });
+}
+function updateFee() { const d = S.draft, fee = Math.round(d.reward * FEE), f = $('.fee'); if (!f) return; const b = f.querySelectorAll('b'); b[0].textContent = won(d.reward - fee); b[1].textContent = won(fee); }
+function refreshLive() {
+  renderTabbar(); renderHeader();
+  if (S.room) { if (!qById(S.room.qid)) { S.room = null; renderRoom(); } else renderRoomBody(); }
+  if (S.tab === 'map') { renderPreview(); scheduleOverlay(); if (S.listOpen || isWide()) scheduleList(); }
+  else if (!document.activeElement || !document.activeElement.matches('input,textarea,select')) renderPage();
+}
+function readImage(file, max) {
+  return new Promise((res, rej) => {
+    if (!file || !file.type.startsWith('image/')) return rej(new Error('type'));
+    const fr = new FileReader();
+    fr.onload = () => { const img = new Image(); img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', 0.72)); }; img.onerror = rej; img.src = fr.result; };
+    fr.onerror = rej; fr.readAsDataURL(file);
+  });
+}
+
+// ===== boot =====
+function boot() {
+  load();
+  API.sweep();
+  $('#langSel').innerHTML = Object.entries(LANGS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  bindEvents(); mapInit();
+  if (!location.hash) history.replaceState(null, '', '#map');
+  route();
+  getSample().then(s => { S.trAvail = s ? 'ready' : 'none'; if (S.room) renderComposerPreview(); });
+  setInterval(() => { if (API.sweep()) refreshLive(); else if (!S.room && S.tab !== 'map' && !(document.activeElement && document.activeElement.matches('input,textarea'))) renderPage(); else if (S.tab === 'map') renderPreview(); }, 30000);
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
